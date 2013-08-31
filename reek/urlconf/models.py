@@ -22,3 +22,7 @@ class BasePage(OrderableModel):
 
     def __repr__(self):
         return '<Page /{path} pk={pk}>'.format(path=self.path, pk=self.pk)
+
+    @property
+    def slug(self):
+        return self.path.split(u'/')[-1] if self.path else u''
