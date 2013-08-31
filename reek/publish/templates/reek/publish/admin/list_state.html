@@ -1,0 +1,8 @@
+{% load static %}
+
+{% if instance.is_published %}
+  <img src="{% static "admin/img/icon-yes.gif" %}" alt="Published"> ({{ instance.published_version.id }})
+{% else %}
+  <img src="{% static "admin/img/icon-no.gif" %}" alt="Not published">
+{% endif %}
+
