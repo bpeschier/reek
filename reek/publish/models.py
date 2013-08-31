@@ -26,17 +26,20 @@ class PublishState(models.Model):
         verbose_name_plural = _('Publish states')
 
 
-class PublishMetaclass(ModelBase):
-    def __new__(mcs, *args, **kwargs):
+class PublishableBase(ModelBase):
+    def __new__(mcs, name, bases, attrs):
         # Make sure we are registered
-        kls = super(PublishMetaclass, mcs).__new__(mcs, *args, **kwargs)
+        follow = attrs.pop('version_follow', [])
+        kls = super(PublishableBase, mcs).__new__(mcs, name, bases, attrs)
         if not kls._meta.abstract and not reversion.is_registered(kls):
-            reversion.register(kls)
+            reversion.register(kls, follow=follow)
         return kls
 
 
 class Publishable(models.Model):
-    __metaclass__ = PublishMetaclass
+    __metaclass__ = PublishableBase
+
+    version_follow = []  # Follow these FK's when saving this object
 
     class Meta:
         abstract = True
