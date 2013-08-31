@@ -18,4 +18,7 @@ class BasePage(OrderableModel):
         verbose_name_plural = _('Pages')
 
     def __unicode__(self):
-        return u'<Page: /{0}>'.format(self.path)
+        return self.title
+
+    def __repr__(self):
+        return '<Page /{path} pk={pk}>'.format(path=self.path, pk=self.pk)
