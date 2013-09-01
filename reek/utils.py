@@ -21,27 +21,24 @@ class NotRegistered(Exception):
     pass
 
 
-class Pool(object):
-    def __init__(self):
-        self._registry = {}  # name --> class
-
+class Pool(dict):
     def register(self, model):
         name = model.__name__
-        if name in self._registry:
+        if name in self:
             raise AlreadyRegistered("'{0}' already registered".format(name))
         else:
-            self._registry[name] = model
+            self[name] = model
 
     def unregister(self, model):
         name = model.__name__
-        if not name in self._registry:
+        if not name in self:
             raise NotRegistered("'{0}' not registered".format(name))
         else:
-            del self._registry[name]
+            del self[name]
 
     def get_by_name(self, name):
         try:
-            name = str(name)
-            return self._registry[name]
+            return self[name]
         except KeyError:
             raise NotRegistered("'{0}' not registered".format(name))
+

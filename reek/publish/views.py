@@ -37,6 +37,8 @@ class PublishableContentMixin(ContentMixin):
 
 
 class PublishableContentView(ContentTemplateMixin, PublishableContentMixin, BasePageView):
+    verbose_name = 'Publishable content page'
+
     def get(self, request, *args, **kwargs):
         self.page = self.get_page()
         self.content = self.get_content()

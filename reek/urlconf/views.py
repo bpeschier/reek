@@ -197,6 +197,8 @@ class ContentTemplateMixin(base.TemplateResponseMixin, ContentMixin):
 
 
 class PageView(base.TemplateResponseMixin, BasePageView):
+    verbose_name = 'Simple page'
+
     def get(self, request, *args, **kwargs):
         self.page = self.get_page()
         context = self.get_context_data(**kwargs)
@@ -204,39 +206,12 @@ class PageView(base.TemplateResponseMixin, BasePageView):
 
 
 class ContentView(ContentTemplateMixin, ContentMixin, BasePageView):
+    verbose_name = 'Content page'
+
     def get(self, request, *args, **kwargs):
         self.page = self.get_page()
         self.content = self.get_content()
         context = self.get_context_data(**kwargs)
         return self.render_to_response(context)
 
-
-class PageView(base.TemplateResponseMixin, BasePageView):
-    def get(self, request, *args, **kwargs):
-        self.page = self.get_page()
-        context = self.get_context_data(**kwargs)
-        return self.render_to_response(context)
-
-
-class ContentView(ContentTemplateMixin, ContentMixin, BasePageView):
-    def get(self, request, *args, **kwargs):
-        self.page = self.get_page()
-        self.content = self.get_content()
-        context = self.get_context_data(**kwargs)
-        return self.render_to_response(context)
-
-
-class PageView(base.TemplateResponseMixin, BasePageView):
-    def get(self, request, *args, **kwargs):
-        self.page = self.get_page()
-        context = self.get_context_data(**kwargs)
-        return self.render_to_response(context)
-
-
-class ContentView(ContentTemplateMixin, ContentMixin, BasePageView):
-    def get(self, request, *args, **kwargs):
-        self.page = self.get_page()
-        self.content = self.get_content()
-        context = self.get_context_data(**kwargs)
-        return self.render_to_response(context)
 
