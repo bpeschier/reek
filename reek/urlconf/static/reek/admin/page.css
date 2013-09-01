@@ -11,13 +11,17 @@
     justify-content: center;
 }
 
+.reek-root {
+    cursor: copy;
+}
+
 .reek-pages li {
     display: block;
     flex: 1 1 auto;
 }
 
-.reek-depth-1 > ol {
-    /*flex-flow: column nowrap;*/
+.reek-vertical > ol {
+    flex-flow: column nowrap;
 }
 
 .reek-page {
@@ -25,6 +29,7 @@
     margin: 0 auto 20px auto;
     background-color: #fff;
     border: 1px solid #ccc;
+    cursor: auto;
 
     width: 150px;
     height: 50px;
