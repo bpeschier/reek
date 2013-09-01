@@ -23,19 +23,11 @@
   {% if action_form and actions_on_top and cl.full_result_count %}{% admin_actions %}{% endif %}
   <label><input type="checkbox" id="action-toggle"> {% trans "Toggle all" %}</label>
   <div class="reek-pages">
-    {% for obj in cl.result_list %}
-      <div class="reek-page {% if obj.parent %}reek-child{% else %}reek-root{% endif %}" id="reek-page-{{ obj.pk }}"
-           {% if obj.parent %}data-reek-parent="reek-page-{{ obj.parent.pk }}"{% endif %}>
-        <header>
-          <input class="action-select" id="action-select-{{ obj.pk }}" name="_selected_action" type="checkbox"
-                 value="{{ obj.pk }}">
-
-          <h2>
-            {{ obj.title }}
-          </h2>
-        </header>
-      </div>
-    {% endfor %}
+    <ol>
+      {% with node=cl.result_root depth=0 %}
+        {% include "reek/urlconf/admin/page/change_list_node.html" %}
+      {% endwith %}
+    </ol>
   </div>
   {% if action_form and actions_on_bottom and cl.full_result_count %}{% admin_actions %}{% endif %}
 {% endblock %}

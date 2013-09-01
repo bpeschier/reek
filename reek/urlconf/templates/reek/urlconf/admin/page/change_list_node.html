@@ -1,0 +1,25 @@
+<li class="{% if node.parent %}reek-child{% else %}reek-root{% endif %} reek-depth-{{ depth }}"
+    id="reek-page-{{ node.pk }}"
+    style="order: {{ node.order }};"
+    {% if node.parent %}data-reek-parent="reek-page-{{ node.parent.pk }}"{% endif %}
+    >
+  <section class="reek-page">
+    <header>
+      <input class="action-select" id="action-select-{{ node.pk }}" name="_selected_action" type="checkbox"
+             value="{{ node.pk }}">
+
+      <h2>
+        {{ node.title }}
+      </h2>
+    </header>
+  </section>
+  {% with children=node.children.all depth=depth|add:1 template="reek/urlconf/admin/page/change_list_node.html" %}
+    {% if children.exists %}
+      <ol>
+        {% for node in children %}
+          {% include template %}
+        {% endfor %}
+      </ol>
+    {% endif %}
+  {% endwith %}
+</li>
