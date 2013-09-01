@@ -5,12 +5,15 @@ from ..models import OrderableModel
 
 
 class BasePage(OrderableModel):
-    parent = models.ForeignKey('self', null=True, blank=True, related_name='children')
-    path = models.CharField(max_length=255, db_index=True, blank=True)
-    title = models.CharField(max_length=255)
-
     # Reference to our view
     view_name = models.CharField(max_length=100)
+
+    # Tree-fields
+    parent = models.ForeignKey('self', null=True, blank=True, related_name='children', editable=False)
+    path = models.CharField(max_length=255, db_index=True, blank=True, editable=False)
+
+    # For menus
+    title = models.CharField(max_length=255)
 
     class Meta:
         abstract = True
