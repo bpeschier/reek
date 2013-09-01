@@ -1,18 +1,3 @@
-import re
-
-from unidecode import unidecode
-
-from django.utils.functional import allow_lazy
-from django.utils.safestring import mark_safe
-
-
-@allow_lazy
-def slugify(value):
-    value = unidecode(value)
-    value = re.sub('[^\w\s-]', '', value).strip().lower()
-    return mark_safe(re.sub('[-\s]+', '-', value))
-
-
 class AlreadyRegistered(Exception):
     pass
 
