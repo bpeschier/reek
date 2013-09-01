@@ -11,7 +11,7 @@ class PublishableContentMixin(ContentMixin):
         Get the latest published version of the content
         """
         content = super(PublishableContentMixin, self).get_content()
-        perm = '%s.change_%s' % (self.model._meta.app_label, self.model._meta.module_name)
+        perm = '%s.change_%s' % (self.model._meta.app_label, self.model._meta.model_name)
         version = self.request.GET.get('version', None) if self.request.user.has_perm(perm) else None
 
         if version:  # we are allowed to display a specific version

@@ -35,7 +35,7 @@ class PublishAdmin(VersionAdmin):
         is_published.short_description = _('Published')
 
         def publish_actions(obj):
-            suffix = u'{app}_{module}'.format(app=obj._meta.app_label, module=obj._meta.module_name)
+            suffix = u'{app}_{module}'.format(app=obj._meta.app_label, module=obj._meta.model_name)
             context = {
                 'instance': obj,
                 'can_publish': can_publish,
@@ -69,7 +69,7 @@ class PublishAdmin(VersionAdmin):
 
     def get_urls(self):
         urls = super(PublishAdmin, self).get_urls()
-        suffix = u'{app}_{module}'.format(app=self.model._meta.app_label, module=self.model._meta.module_name)
+        suffix = u'{app}_{module}'.format(app=self.model._meta.app_label, module=self.model._meta.model_name)
         publish_urls = patterns(
             '',
             url(r'^publish/(?P<pk>(\d+))/$', self.admin_site.admin_view(self.publish_view),
@@ -103,7 +103,7 @@ class PublishAdmin(VersionAdmin):
             messages.add_message(
                 request, messages.INFO,
                 '{model} is requested for publish'.format(model=self.model._meta.verbose_name))
-            info = (self.model._meta.app_label, self.model._meta.module_name)
+            info = (self.model._meta.app_label, self.model._meta.model_name)
             redirect = reverse('admin:%s_%s_changelist' % info)
             return HttpResponseRedirect(redirect)
         else:
@@ -116,7 +116,7 @@ class PublishAdmin(VersionAdmin):
             messages.add_message(
                 request, messages.INFO,
                 '{model} was published'.format(model=self.model._meta.verbose_name))
-            info = (self.model._meta.app_label, self.model._meta.module_name)
+            info = (self.model._meta.app_label, self.model._meta.model_name)
             redirect = reverse('admin:%s_%s_changelist' % info)
             return HttpResponseRedirect(redirect)
         else:
@@ -129,7 +129,7 @@ class PublishAdmin(VersionAdmin):
             messages.add_message(
                 request, messages.INFO,
                 '{model} is no longer published'.format(model=self.model._meta.verbose_name))
-            info = (self.model._meta.app_label, self.model._meta.module_name)
+            info = (self.model._meta.app_label, self.model._meta.model_name)
             redirect = reverse('admin:%s_%s_changelist' % info)
             return HttpResponseRedirect(redirect)
         else:
