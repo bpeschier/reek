@@ -30,6 +30,8 @@ class TreeChangeList(ChangeList):
 class PageForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(PageForm, self).__init__(*args, **kwargs)
+
+        # Fetch registered views to show
         self.fields['view_name'].widget.choices = ((name, view.verbose_name) for (name, view) in
                                                    registered_views.items())
 

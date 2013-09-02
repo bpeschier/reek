@@ -6,7 +6,7 @@ from ..models import OrderableModel
 
 class BasePage(OrderableModel):
     # Reference to our view
-    view_name = models.CharField(max_length=100)
+    view_name = models.CharField(max_length=100, verbose_name=_('Page type'))
 
     # Tree-fields
     parent = models.ForeignKey('self', null=True, blank=True, related_name='children', editable=False)
