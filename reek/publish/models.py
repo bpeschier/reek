@@ -104,11 +104,18 @@ class Publishable(models.Model):
     def latest_version(self):
         version = getattr(self, '_latest_version', None)
         if version is None:
-            self._latest_version = reversion.get_for_object(self)[0]
+            self._latest_version = self._get_latest_version()
         return self._latest_version
 
     def get_version(self, version_id):
         return reversion.get_for_object(self).get(id=version_id)
+
+    def _get_latest_version(self):
+        try:
+            version = reversion.get_for_object(self)[0]
+        except IndexError:
+            version = None
+        return version
 
     def _get_published_version(self):
         try:
