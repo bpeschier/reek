@@ -213,5 +213,3 @@ class ContentView(ContentTemplateMixin, ContentMixin, BasePageView):
         self.content = self.get_content()
         context = self.get_context_data(**kwargs)
         return self.render_to_response(context)
-
-
