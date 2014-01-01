@@ -5,7 +5,7 @@ from django.utils.translation import get_language
 from .views import registered_views, ApplicationView
 
 
-class BasePageResolver(RegexURLResolver):
+class PageResolver(RegexURLResolver):
     """
     Extension of core's RegexURLResolver which resolves paths for pages.
 
@@ -22,6 +22,9 @@ class BasePageResolver(RegexURLResolver):
         self._reverse_dict = {}
         self._namespace_dict = {}
         self._app_dict = {}
+
+    def __repr__(self):
+        return '<Page resolver>'
 
     def _populate(self):
         # Since we provide no reverses, we just leave this empty,
@@ -43,7 +46,7 @@ class BasePageResolver(RegexURLResolver):
         """
         Match path to Page object and return its registered view
         """
-        if not path.endswith('/'):  # paths for pages should end with /
+        if path and not path.endswith('/'):  # paths for pages should end with /
             raise Resolver404({'tried': [], 'path': path})
 
         try:
@@ -81,6 +84,18 @@ class BasePageResolver(RegexURLResolver):
                     view_class.as_view(), [], kwargs, app_name=self.app_name, namespaces=[self.namespace, ])
 
 
+class URLConfWrapper:
+    """
+    Mimicks a urls.py urlconf interface so RegexURLResolver can work with it
+    """
+    def __init__(self, resolver):
+        self.resolver = resolver
+
+    @property
+    def urlpatterns(self):
+        return [self.resolver,]
+
+
 def page_urls(page_model, app_name=None, namespace=None):
     """
     Include page urls as pattern.
@@ -92,7 +107,7 @@ def page_urls(page_model, app_name=None, namespace=None):
         page_urls(Page),
     )
     """
-    return BasePageResolver(page_model, app_name=app_name, namespace=namespace)
+    return PageResolver(page_model, app_name=app_name, namespace=namespace)
 
 
 def include_pages(page_model, app_name=None, namespace=None):
@@ -106,7 +121,7 @@ def include_pages(page_model, app_name=None, namespace=None):
         url(r'^subpath/', include_pages(Page)),
     )
     """
-    return page_urls(page_model, app_name, namespace), app_name, namespace
+    return URLConfWrapper(page_urls(page_model, app_name, namespace)), app_name, namespace
 
 
 def page_patterns(page_model):

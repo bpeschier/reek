@@ -9,4 +9,4 @@ class URLConfAppConfig(AppConfig):
 
     def ready(self):
         # Walk over all views-modules to discover views
-        autodiscover_modules('views', register_to=registered_views)
+        autodiscover_modules('views')
