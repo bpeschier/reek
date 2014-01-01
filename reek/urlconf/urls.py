@@ -1,8 +1,8 @@
-from django.core.urlresolvers import ResolverMatch, Resolver404, RegexURLResolver, LocaleRegexProvider
+from django.core.urlresolvers import ResolverMatch, Resolver404, RegexURLResolver, LocaleRegexProvider, get_resolver
 from django.utils.datastructures import MultiValueDict
 from django.utils.translation import get_language
 
-from .views import registered_views
+from .views import registered_views, ApplicationView
 
 
 class BasePageResolver(RegexURLResolver):
@@ -62,15 +62,23 @@ class BasePageResolver(RegexURLResolver):
                 used_slugs = page.path.split('/')
                 page_slug = used_slugs[-1]
                 subpage_slugs = slugs[len(used_slugs):]
+            subpage_path = '/' + ''.join(slug + '/' for slug in subpage_slugs)
 
             # Return registered view with slugs
-            view = registered_views.get_view_by_name(page.view_name)
-            kwargs = {
-                'page': page,
-                'slug': page_slug,
-                'subpage_slugs': subpage_slugs,
-            }
-            return ResolverMatch(view, [], kwargs, app_name=self.app_name, namespaces=[self.namespace, ])
+            view_class = registered_views.get_by_name(page.view_name)
+
+            # If we have an ApplicationView, we need to go deeper
+            if issubclass(view_class, ApplicationView):
+                return get_resolver(view_class.urlconf_name).resolve(subpage_path)
+            else:
+                kwargs = {
+                    'page': page,
+                    'slug': page_slug,
+                    'subpage_slugs': subpage_slugs,
+                    'subpage_path': subpage_path,
+                }
+                return ResolverMatch(
+                    view_class.as_view(), [], kwargs, app_name=self.app_name, namespaces=[self.namespace, ])
 
 
 def page_urls(page_model, app_name=None, namespace=None):

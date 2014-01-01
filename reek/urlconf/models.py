@@ -6,7 +6,7 @@ from ..models import OrderableModel
 
 class BasePage(OrderableModel):
     # Reference to our view
-    view_name = models.CharField(max_length=100, verbose_name=_('Page type'))
+    view_name = models.CharField(max_length=100, verbose_name=_('Page type'), blank=True)
 
     # Tree-fields
     parent = models.ForeignKey('self', null=True, blank=True, related_name='children', editable=False)
@@ -29,3 +29,4 @@ class BasePage(OrderableModel):
     @property
     def slug(self):
         return self.path.split(u'/')[-1] if self.path else u''
+

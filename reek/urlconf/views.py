@@ -5,15 +5,12 @@ from django.utils.translation import ugettext_lazy as _
 
 from ..utils import Pool
 
-
-class ViewPool(Pool):
-    def get_view_by_name(self, name, *args, **kwargs):
-        view_class = super().get_by_name(name)
-        return view_class.as_view(*args, **kwargs)
+registered_views = Pool()
 
 
-registered_views = ViewPool()
-
+#
+# Simple pages
+#
 
 class PageMixin(base.ContextMixin):
     page_url_kwarg = 'page'
@@ -62,6 +59,21 @@ class BasePageView(PageMixin, base.View):
             raise Http404(_("View '%(verbose_name)s' does not allow subpages") %
                           {'verbose_name': self.__class__.__name__})
         return super().dispatch(request, *args, **kwargs)
+
+
+class PageView(base.TemplateResponseMixin, BasePageView):
+    verbose_name = 'Simple page'
+
+    def get(self, request, *args, **kwargs):
+        self.page = self.get_page()
+        context = self.get_context_data(**kwargs)
+        return self.render_to_response(context)
+
+
+#
+# Content-based pages.
+# These have their own Model which get fed to the template
+#
 
 
 class ContentMixin(base.ContextMixin):
@@ -133,15 +145,6 @@ class ContentTemplateMixin(base.TemplateResponseMixin, ContentMixin):
         return names
 
 
-class PageView(base.TemplateResponseMixin, BasePageView):
-    verbose_name = 'Simple page'
-
-    def get(self, request, *args, **kwargs):
-        self.page = self.get_page()
-        context = self.get_context_data(**kwargs)
-        return self.render_to_response(context)
-
-
 class ContentView(ContentTemplateMixin, ContentMixin, BasePageView):
     verbose_name = 'Content page'
 
@@ -150,3 +153,13 @@ class ContentView(ContentTemplateMixin, ContentMixin, BasePageView):
         self.content = self.get_content()
         context = self.get_context_data(**kwargs)
         return self.render_to_response(context)
+
+
+#
+# Application pages
+# These act as anchor or another Django app
+#
+
+class ApplicationView:
+    urlconf_name = None
+    verbose_name = None
