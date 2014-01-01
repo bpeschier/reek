@@ -20,7 +20,7 @@ class BasePage(OrderableModel):
         verbose_name = _('Page')
         verbose_name_plural = _('Pages')
 
-    def __unicode__(self):
+    def __str__(self):
         return self.title
 
     def __repr__(self):

@@ -1,8 +1,6 @@
 from django.views.generic import base
 from django.db import models
 from django.http import Http404
-from django.utils import six
-from django.utils.decorators import classonlymethod
 from django.utils.translation import ugettext_lazy as _
 
 from ..utils import Pool
@@ -10,72 +8,11 @@ from ..utils import Pool
 
 class ViewPool(Pool):
     def get_view_by_name(self, name, *args, **kwargs):
-        view_class = super(ViewPool, self).get_by_name(name)
+        view_class = super().get_by_name(name)
         return view_class.as_view(*args, **kwargs)
 
 
 registered_views = ViewPool()
-
-
-class BasePageResolver(object):
-    page_model = None
-
-    def __init__(self, **kwargs):
-        """
-        Constructor. Called in the URLconf; can contain helpful extra
-        keyword arguments, and other things.
-        """
-        # Go through keyword arguments, and either save their values to our
-        # instance, or raise an error.
-        for key, value in six.iteritems(kwargs):
-            setattr(self, key, value)
-
-    @classonlymethod
-    def as_view(cls, **init_kwargs):
-        """
-        Main entry point for a request-response process.
-        """
-
-        def view(request, path, *args, **kwargs):
-            self = cls(**init_kwargs)
-            return self.dispatch(request, path, *args, **kwargs)
-
-        return view
-
-    def get_pages_for_path(self, slugs):
-        """
-        Finds pages for given slugs in the path.
-        Ordered by length, so the deepest option is on top.
-        """
-        ancestor_paths = [u''] + [u'/'.join(slugs[:i + 1]) for i in range(len(slugs))]
-        return self.page_model.objects.filter(path__in=ancestor_paths).order_by('-path')
-
-    def dispatch(self, request, path, *args, **kwargs):
-        """
-        Match path to Page object and call its registered view
-        """
-        try:
-            path = path.strip(u'/')
-            slugs = path.split(u'/') if len(path) > 0 else []
-            page = self.get_pages_for_path(slugs)[0]  # Fetch best candidate
-
-            # Check which part of the url we are using
-            if not page.path:
-                page_slug = u''
-                subpage_slugs = slugs
-            else:
-                used_slugs = page.path.split(u'/')
-                page_slug = used_slugs[-1]
-                subpage_slugs = slugs[len(used_slugs):]
-
-            # Call registered view with slugs
-            view = registered_views.get_view_by_name(page.view_name)
-            return view(request, page=page, slug=page_slug, subpage_slugs=subpage_slugs, *args, **kwargs)
-
-        except (self.page_model.DoesNotExist, IndexError):
-            pass
-
-        raise Http404(_("No page found for path '%(path)s'", {'path': path}))
 
 
 class PageMixin(base.ContextMixin):
@@ -108,7 +45,7 @@ class PageMixin(base.ContextMixin):
         if context_page_name:
             context[context_page_name] = self.page
         context.update(kwargs)
-        return super(PageMixin, self).get_context_data(**context)
+        return super().get_context_data(**context)
 
 
 class BasePageView(PageMixin, base.View):
@@ -124,7 +61,7 @@ class BasePageView(PageMixin, base.View):
         if not self.allows_subpages and self.is_ancestor_view():
             raise Http404(_("View '%(verbose_name)s' does not allow subpages") %
                           {'verbose_name': self.__class__.__name__})
-        return super(BasePageView, self).dispatch(request, *args, **kwargs)
+        return super().dispatch(request, *args, **kwargs)
 
 
 class ContentMixin(base.ContextMixin):
@@ -181,13 +118,13 @@ class ContentMixin(base.ContextMixin):
         if context_content_name:
             context[context_content_name] = self.content
         context.update(kwargs)
-        return super(ContentMixin, self).get_context_data(**context)
+        return super().get_context_data(**context)
 
 
 class ContentTemplateMixin(base.TemplateResponseMixin, ContentMixin):
     def get_template_names(self):
         try:
-            names = super(ContentTemplateMixin, self).get_template_names()
+            names = super().get_template_names()
         except base.ImproperlyConfigured:
             names = []
 
