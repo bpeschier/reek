@@ -3,6 +3,7 @@ from django.utils.datastructures import MultiValueDict
 from django.utils.encoding import force_text
 from django.utils.regex_helper import normalize
 from django.utils.translation import get_language
+from django.db.models.signals import post_save
 
 from .views import registered_views, ApplicationView
 
@@ -26,8 +27,15 @@ class PageResolver(RegexURLResolver):
         self._namespace_dict = {}
         self._app_dict = {}
 
+        post_save.connect(self._handle_post_save, sender=self.page_model)
+
     def __repr__(self):
         return '<Page resolver>'
+
+    @staticmethod
+    def _handle_post_save(**kwargs):
+        # Let us see if this will clear the root url resolver
+        get_resolver(None)._populate()
 
     def _populate(self):
         lookups = MultiValueDict()
