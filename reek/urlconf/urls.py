@@ -1,5 +1,6 @@
 from django.core.urlresolvers import ResolverMatch, Resolver404, RegexURLResolver, LocaleRegexProvider, get_resolver
 from django.utils.datastructures import MultiValueDict
+from django.utils.regex_helper import normalize
 from django.utils.translation import get_language
 
 from .views import registered_views, ApplicationView
@@ -17,6 +18,7 @@ class PageResolver(RegexURLResolver):
         self.page_model = page_model
         self.namespace = namespace
         self.app_name = app_name
+        self.default_kwargs = {}
 
         # Private dicts used for reverse mapping
         self._reverse_dict = {}
@@ -27,12 +29,43 @@ class PageResolver(RegexURLResolver):
         return '<Page resolver>'
 
     def _populate(self):
+        lookups = MultiValueDict()
+        namespaces = {}
+        apps = {}
         # Since we provide no reverses, we just leave this empty,
         # but we do need to setup with the language
         language_code = get_language()
-        self._reverse_dict[language_code] = MultiValueDict()
-        self._namespace_dict[language_code] = {}
-        self._app_dict[language_code] = {}
+        for page in self.page_model.objects.all():
+            view_class = registered_views.get_by_name(page.view_name)
+            if issubclass(view_class, ApplicationView):
+                resolver = get_resolver(view_class.urlconf_name)
+                resolver._regex = page.path
+                self._populate_subresolver(resolver, lookups, namespaces, apps)
+
+        self._reverse_dict[language_code] = lookups
+        self._namespace_dict[language_code] = namespaces
+        self._app_dict[language_code] = apps
+
+    def _populate_subresolver(self, resolver, lookups, namespaces, apps):
+        p_pattern = resolver.regex.pattern
+        print(p_pattern, "HOI")
+        if resolver.namespace:
+            namespaces[resolver.namespace] = (p_pattern, resolver)
+            if resolver.app_name:
+                apps.setdefault(resolver.app_name, []).append(resolver.namespace)
+        else:
+            parent = normalize(resolver.regex.pattern)
+            for name in resolver.reverse_dict:
+                for matches, pat, defaults in resolver.reverse_dict.getlist(name):
+                    new_matches = []
+                    for piece, p_args in parent:
+                        new_matches.extend((piece + suffix, p_args + args) for (suffix, args) in matches)
+                    lookups.appendlist(name, (new_matches, p_pattern + pat, dict(defaults, **resolver.default_kwargs)))
+            for namespace, (prefix, sub_pattern) in resolver.namespace_dict.items():
+                namespaces[namespace] = (p_pattern + prefix, sub_pattern)
+            for app_name, namespace_list in resolver.app_dict.items():
+                apps.setdefault(app_name, []).extend(namespace_list)
+
 
     def get_pages_for_path(self, slugs):
         """
@@ -65,14 +98,15 @@ class PageResolver(RegexURLResolver):
                 used_slugs = page.path.split('/')
                 page_slug = used_slugs[-1]
                 subpage_slugs = slugs[len(used_slugs):]
-            subpage_path = '/' + ''.join(slug + '/' for slug in subpage_slugs)
+            subpage_path = ''.join(slug + '/' for slug in subpage_slugs)
 
             # Return registered view with slugs
             view_class = registered_views.get_by_name(page.view_name)
 
             # If we have an ApplicationView, we need to go deeper
             if issubclass(view_class, ApplicationView):
-                return get_resolver(view_class.urlconf_name).resolve(subpage_path)
+                resolver = get_resolver(view_class.urlconf_name)
+                return resolver.resolve(subpage_path)
             else:
                 kwargs = {
                     'page': page,

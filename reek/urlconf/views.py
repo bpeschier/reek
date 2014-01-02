@@ -162,4 +162,7 @@ class ContentView(ContentTemplateMixin, ContentMixin, BasePageView):
 
 class ApplicationView:
     urlconf_name = None
+    namespace = None
+    app_name = None
+
     verbose_name = None
