@@ -88,12 +88,13 @@ class URLConfWrapper:
     """
     Mimicks a urls.py urlconf interface so RegexURLResolver can work with it
     """
+
     def __init__(self, resolver):
         self.resolver = resolver
 
     @property
     def urlpatterns(self):
-        return [self.resolver,]
+        return [self.resolver, ]
 
 
 def page_urls(page_model, app_name=None, namespace=None):

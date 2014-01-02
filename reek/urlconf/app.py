@@ -1,8 +1,6 @@
 from django.apps import AppConfig
 from django.utils.module_loading import autodiscover_modules
 
-from .views import registered_views
-
 
 class URLConfAppConfig(AppConfig):
     name = 'reek.urlconf'
