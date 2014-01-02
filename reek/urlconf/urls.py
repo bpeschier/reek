@@ -1,5 +1,6 @@
 from django.core.urlresolvers import ResolverMatch, Resolver404, RegexURLResolver, LocaleRegexProvider, get_resolver
 from django.utils.datastructures import MultiValueDict
+from django.utils.encoding import force_text
 from django.utils.regex_helper import normalize
 from django.utils.translation import get_language
 
@@ -38,17 +39,19 @@ class PageResolver(RegexURLResolver):
         for page in self.page_model.objects.all():
             view_class = registered_views.get_by_name(page.view_name)
             if issubclass(view_class, ApplicationView):
-                resolver = get_resolver(view_class.urlconf_name)
-                resolver._regex = page.path
+                resolver = self.get_subresolver(view_class)
                 self._populate_subresolver(resolver, lookups, namespaces, apps)
 
         self._reverse_dict[language_code] = lookups
         self._namespace_dict[language_code] = namespaces
         self._app_dict[language_code] = apps
 
-    def _populate_subresolver(self, resolver, lookups, namespaces, apps):
+    @staticmethod
+    def _populate_subresolver(resolver, lookups, namespaces, apps):
+        # XXX emulate part of _populate :/
         p_pattern = resolver.regex.pattern
-        print(p_pattern, "HOI")
+        if p_pattern.startswith('^'):
+            p_pattern = p_pattern[1:]
         if resolver.namespace:
             namespaces[resolver.namespace] = (p_pattern, resolver)
             if resolver.app_name:
@@ -66,7 +69,6 @@ class PageResolver(RegexURLResolver):
             for app_name, namespace_list in resolver.app_dict.items():
                 apps.setdefault(app_name, []).extend(namespace_list)
 
-
     def get_pages_for_path(self, slugs):
         """
         Finds pages for given slugs in the path.
@@ -75,10 +77,17 @@ class PageResolver(RegexURLResolver):
         ancestor_paths = [''] + ['/'.join(slugs[:i + 1]) for i in range(len(slugs))]
         return self.page_model.objects.filter(path__in=ancestor_paths).order_by('-path')
 
+    @staticmethod
+    def get_subresolver(view_class):
+        return RegexURLResolver(
+            r'', urlconf_name=view_class.urlconf_name, namespace=view_class.namespace, app_name=view_class.app_name)
+
     def resolve(self, path):
         """
         Match path to Page object and return its registered view
         """
+        path = force_text(path)  # path may be a reverse_lazy object
+
         if path and not path.endswith('/'):  # paths for pages should end with /
             raise Resolver404({'tried': [], 'path': path})
 
@@ -105,7 +114,7 @@ class PageResolver(RegexURLResolver):
 
             # If we have an ApplicationView, we need to go deeper
             if issubclass(view_class, ApplicationView):
-                resolver = get_resolver(view_class.urlconf_name)
+                resolver = self.get_subresolver(view_class)
                 return resolver.resolve(subpage_path)
             else:
                 kwargs = {
