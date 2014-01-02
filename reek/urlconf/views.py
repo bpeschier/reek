@@ -157,7 +157,7 @@ class ContentView(ContentTemplateMixin, ContentMixin, BasePageView):
 
 #
 # Application pages
-# These act as anchor or another Django app
+# These act as anchor of another Django app
 #
 
 class ApplicationView:
