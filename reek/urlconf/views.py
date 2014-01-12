@@ -5,7 +5,6 @@ from django.utils.translation import ugettext_lazy as _
 
 from ..utils import Pool
 
-
 registered_views = Pool()
 
 
@@ -65,7 +64,7 @@ class BasePageView(PageMixin, base.View):
 class PageView(base.TemplateResponseMixin, BasePageView):
     verbose_name = 'Simple page'
 
-    def get(self, request, *args, **kwargs):
+    def get(self, request, **kwargs):
         self.page = self.get_page()
         context = self.get_context_data(**kwargs)
         return self.render_to_response(context)
@@ -149,7 +148,7 @@ class ContentTemplateMixin(base.TemplateResponseMixin, ContentMixin):
 class ContentView(ContentTemplateMixin, ContentMixin, BasePageView):
     verbose_name = 'Content page'
 
-    def get(self, request, *args, **kwargs):
+    def get(self, request, **kwargs):
         self.page = self.get_page()
         self.content = self.get_content()
         context = self.get_context_data(**kwargs)

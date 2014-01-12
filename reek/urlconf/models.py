@@ -9,8 +9,8 @@ class BasePage(OrderableModel):
     view_name = models.CharField(max_length=100, verbose_name=_('Page type'), blank=True)
 
     # Tree-fields
-    parent = models.ForeignKey('self', null=True, blank=True, related_name='children', editable=False)
-    path = models.CharField(max_length=255, db_index=True, blank=True, editable=False)
+    parent = models.ForeignKey('self', null=True, blank=True, related_name='children')
+    path = models.CharField(max_length=255, db_index=True, blank=True)
 
     # For menus
     title = models.CharField(max_length=255)

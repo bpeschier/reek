@@ -40,9 +40,10 @@ class PageResolver(RegexURLResolver):
         return '<Page resolver>'
 
     @staticmethod
-    def get_subresolver(view_class):
+    def get_subresolver(view_class, path=None):
+        path = r'' if path is None else r'^{}/'.format(path)
         return RegexURLResolver(
-            r'', urlconf_name=view_class.urlconf_name, namespace=view_class.namespace, app_name=view_class.app_name)
+            path, urlconf_name=view_class.urlconf_name, namespace=view_class.namespace, app_name=view_class.app_name)
 
     def _populate(self):
         lookups = MultiValueDict()
@@ -54,7 +55,7 @@ class PageResolver(RegexURLResolver):
         for page in self.page_model.objects.all():
             view_class = registered_views.get_by_name(page.view_name)
             if issubclass(view_class, ApplicationView):
-                resolver = self.get_subresolver(view_class)
+                resolver = self.get_subresolver(view_class, page.path)
                 self._populate_subresolver(resolver, lookups, namespaces, apps)
 
         language_code = get_language()
@@ -131,8 +132,7 @@ class PageResolver(RegexURLResolver):
 
         # If we have an ApplicationView, we need to go deeper
         if issubclass(view_class, ApplicationView):
-            subpage_path = ''.join(slug + '/' for slug in subpage_slugs)
-            return self.get_subresolver(view_class).resolve(subpage_path)
+            return self.get_subresolver(view_class, page.path).resolve(path)
         else:
             kwargs = {
                 'page': page,
