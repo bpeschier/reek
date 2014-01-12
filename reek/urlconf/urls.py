@@ -1,4 +1,6 @@
-from django.core.urlresolvers import ResolverMatch, Resolver404, RegexURLResolver, LocaleRegexProvider, get_resolver
+import re
+from django.core.urlresolvers import ResolverMatch, Resolver404, RegexURLResolver, LocaleRegexProvider, get_resolver, \
+    RegexURLPattern
 from django.utils.datastructures import MultiValueDict
 from django.utils.encoding import force_text
 from django.utils.regex_helper import normalize
@@ -28,8 +30,8 @@ class PageResolver(RegexURLResolver):
         self._namespace_dict = {}
         self._app_dict = {}
 
-        def clear_urlconf(**kwargs):
         # Let us see if this will clear the root url resolver
+        def clear_urlconf(**kwargs):
             get_resolver(None)._populate()
 
         post_save.connect(clear_urlconf, sender=self.page_model)
@@ -103,7 +105,7 @@ class PageResolver(RegexURLResolver):
         ancestor_paths = [''] + ['/'.join(slugs[:i + 1]) for i in range(len(slugs))]
         pages = self.page_model.objects.filter(path__in=ancestor_paths).order_by('-path')
         if not pages.exists():
-            raise Resolver404({'tried': ancestor_paths, 'path': path})
+            raise Resolver404({'tried': [[RegexURLPattern(t + '/', None)] for t in ancestor_paths], 'path': path})
         page = pages[0]  # this is our best candidate
 
         # Check which part of the url we are using
@@ -118,6 +120,10 @@ class PageResolver(RegexURLResolver):
 
         # Return registered view with slugs
         view_class = registered_views.get_by_name(page.view_name)
+        if not view_class.allows_subpages and subpage_path:
+            raise Resolver404({'tried': [[RegexURLPattern(t + '/', None)] for t in ancestor_paths], 'path': path})
+
+
 
         # If we have an ApplicationView, we need to go deeper
         if issubclass(view_class, ApplicationView):

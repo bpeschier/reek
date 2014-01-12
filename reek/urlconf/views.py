@@ -5,6 +5,7 @@ from django.utils.translation import ugettext_lazy as _
 
 from ..utils import Pool
 
+
 registered_views = Pool()
 
 
