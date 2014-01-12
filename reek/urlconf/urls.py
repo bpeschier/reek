@@ -132,7 +132,13 @@ class PageResolver(RegexURLResolver):
 
         # If we have an ApplicationView, we need to go deeper
         if issubclass(view_class, ApplicationView):
-            return self.get_subresolver(view_class, page.path).resolve(path)
+            resolver = self.get_subresolver(view_class, page.path)
+            try:
+                return resolver.resolve(path)
+            except Resolver404 as e:
+                # Add PageResolver as base to the tried patterns
+                sub_tried = e.args[0].get('tried') or []
+                raise Resolver404({'path': path, 'tried': [[resolver] + t for t in sub_tried]})
         else:
             kwargs = {
                 'page': page,
