@@ -167,3 +167,4 @@ class ApplicationView:
     app_name = None
 
     verbose_name = None
+    allows_subpages = True

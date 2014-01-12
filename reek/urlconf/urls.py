@@ -85,59 +85,61 @@ class PageResolver(RegexURLResolver):
             for app_name, namespace_list in resolver.app_dict.items():
                 apps.setdefault(app_name, []).extend(namespace_list)
 
-    def get_pages_for_path(self, slugs):
+    def find_page_for_path(self, path):
         """
-        Finds pages for given slugs in the path.
-        Ordered by length, so the deepest option is on top.
+        Resolve the path into the Page instance and return it with trailing subpage information.
         """
+        clean_path = path[:-1]  # remove trailing /
+        slugs = clean_path.split('/') if clean_path else []
+        ancestor_paths = [''] + ['/'.join(slugs[:i + 1]) for i in range(len(slugs))]
+        pages = self.page_model.objects.filter(path__in=ancestor_paths).order_by('-path')
+
+        # Bail if we don't have a result
+        if not pages.exists():
+            raise Resolver404({'tried': [], 'path': path})  # since we query, we don't really have a "tried" list
+
+        page = pages[0]  # this is our best candidate
+
+        # Check which part of the url we are using
+        used_slugs = page.path.split('/') if page.path else []
+        page_slug = used_slugs[-1] if used_slugs else ''
+        subpage_slugs = slugs[len(used_slugs):]
+
+        return page, page_slug, subpage_slugs
 
     def resolve(self, path):
         """
         Match path to Page object and return its registered view
         """
+        # Clean up and check path
         path = force_text(path)  # path may be a reverse_lazy object
-
-        if path and not path.endswith('/'):  # paths for pages should end with /
+        if path and not path.endswith('/'):
+            # If we don't have a / at the end, we bail. If APPEND_SLASH is set,
+            # this will redirect it to the view with a /
             raise Resolver404({'tried': [], 'path': path})
 
-        clean_path = path[:-1]  # remove trailing /
-        slugs = clean_path.split('/') if len(clean_path) > 0 else []
-        ancestor_paths = [''] + ['/'.join(slugs[:i + 1]) for i in range(len(slugs))]
-        pages = self.page_model.objects.filter(path__in=ancestor_paths).order_by('-path')
-        if not pages.exists():
-            raise Resolver404({'tried': [[RegexURLPattern(t + '/', None)] for t in ancestor_paths], 'path': path})
-        page = pages[0]  # this is our best candidate
+        # Get the associated page
+        page, page_slug, subpage_slugs = self.find_page_for_path(path)
 
-        # Check which part of the url we are using
-        if not page.path:
-            page_slug = ''
-            subpage_slugs = slugs
-        else:
-            used_slugs = page.path.split('/')
-            page_slug = used_slugs[-1]
-            subpage_slugs = slugs[len(used_slugs):]
-        subpage_path = ''.join(slug + '/' for slug in subpage_slugs)
-
-        # Return registered view with slugs
+        # Fetch the View class
         view_class = registered_views.get_by_name(page.view_name)
-        if not view_class.allows_subpages and subpage_path:
-            raise Resolver404({'tried': [[RegexURLPattern(t + '/', None)] for t in ancestor_paths], 'path': path})
 
-
+        # The view specifies if it allows subpages. We raise Resolver404 to
+        # allow other patterns below this one in the urlconf
+        if not view_class.allows_subpages and subpage_slugs:
+            raise Resolver404({'tried': [], 'path': path})
 
         # If we have an ApplicationView, we need to go deeper
         if issubclass(view_class, ApplicationView):
-            resolver = self.get_subresolver(view_class)
-            return resolver.resolve(subpage_path)
+            subpage_path = ''.join(slug + '/' for slug in subpage_slugs)
+            return self.get_subresolver(view_class).resolve(subpage_path)
         else:
             kwargs = {
                 'page': page,
                 'slug': page_slug,
                 'subpage_slugs': subpage_slugs,
-                'subpage_path': subpage_path,
             }
-            return ResolverMatch(
-                view_class.as_view(), [], kwargs, app_name=self.app_name, namespaces=[self.namespace, ])
+            return ResolverMatch(view_class.as_view(), [], kwargs, app_name=self.app_name, namespaces=[self.namespace])
 
 
 class URLConfWrapper:
