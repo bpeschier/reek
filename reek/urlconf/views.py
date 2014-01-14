@@ -44,6 +44,14 @@ class PageMixin(base.ContextMixin):
         context.update(kwargs)
         return super().get_context_data(**context)
 
+    @staticmethod
+    def can_have_parent_view(view_class):
+        """
+        Helper function for validating whether or not this view can
+        have view_class as parent.
+        """
+        return True
+
 
 class BasePageView(PageMixin, base.View):
     allows_subpages = False
@@ -82,6 +90,14 @@ class ContentMixin(base.ContextMixin):
     slug_url_kwarg = 'slug'
     context_content_name = 'content'
 
+    @classmethod
+    def get_content_by_slug(cls, slug):
+        """
+        Query the database for the related content object
+        """
+        slug_filter = {cls.slug_field: slug, }
+        return cls.model.objects.get(**slug_filter)
+
     def get_content(self):
         """
         Get the content object from kwargs. Defaults to querying by slug.
@@ -89,9 +105,8 @@ class ContentMixin(base.ContextMixin):
         content = None
         if self.model and self.slug_url_kwarg:
             slug = self.kwargs.get(self.slug_url_kwarg, None)
-            slug_filter = {self.slug_field: slug, }
             try:
-                content = self.model.objects.get(**slug_filter)
+                content = ContentMixin.get_content_by_slug(slug)
             except self.model.DoesNotExist:
                 raise Http404(_("No %(verbose_name)s found matching the slug") %
                               {'verbose_name': self.model._meta.verbose_name})

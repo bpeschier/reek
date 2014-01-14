@@ -29,7 +29,7 @@ class BasePage(OrderableModel):
 
     @property
     def slug(self):
-        return self.path.split(u'/')[-1] if self.path else u''
+        return self.path.split('/')[-1] if self.path else u''
 
     @property
     def view_class(self):

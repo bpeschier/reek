@@ -3,21 +3,13 @@
 }
 
 .reek-pages ol {
-    display: flex;
     list-style-type: none;
     margin: 0;
     padding: 0;
-    flex-flow: row wrap;
-    justify-content: center;
-}
-
-.reek-root {
-    cursor: copy;
 }
 
 .reek-pages li {
     display: block;
-    flex: 1 1 auto;
 }
 
 .reek-vertical > ol {
@@ -26,6 +18,7 @@
 
 .reek-page {
     display: block;
+    /*position: absolute;*/
     margin: 0 auto 20px auto;
     background-color: #fff;
     border: 1px solid #ccc;
@@ -33,7 +26,6 @@
 
     width: 150px;
     height: 50px;
-
 }
 
 .reek-page h2 {
@@ -45,6 +37,7 @@
 }
 
 .module .reek-page.selected h2 {
+
 }
 
 .reek-page .action-select {

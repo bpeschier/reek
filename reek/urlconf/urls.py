@@ -51,7 +51,7 @@ class PageResolver(RegexURLResolver):
         # PageResolver does not have reverses,
         # but ApplicationViews might have
         for page in self.page_model.objects.all():
-            view_class = registered_views.get_by_name(page.view_name)
+            view_class = page.view_class
             if issubclass(view_class, ApplicationView):
                 resolver = self.get_subresolver(view_class, page.path)
                 self._populate_subresolver(resolver, lookups, namespaces, apps)
