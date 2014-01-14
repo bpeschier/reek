@@ -1,13 +1,11 @@
-import re
-from django.core.urlresolvers import ResolverMatch, Resolver404, RegexURLResolver, LocaleRegexProvider, get_resolver, \
-    RegexURLPattern
+from django.core.urlresolvers import ResolverMatch, Resolver404, RegexURLResolver, LocaleRegexProvider, get_resolver
 from django.utils.datastructures import MultiValueDict
 from django.utils.encoding import force_text
 from django.utils.regex_helper import normalize
 from django.utils.translation import get_language
 from django.db.models.signals import post_save
 
-from .views import registered_views, ApplicationView
+from .views import ApplicationView
 
 
 class PageResolver(RegexURLResolver):
@@ -123,7 +121,7 @@ class PageResolver(RegexURLResolver):
         page, page_slug, subpage_slugs = self.find_page_for_path(path)
 
         # Fetch the View class
-        view_class = registered_views.get_by_name(page.view_name)
+        view_class = page.view_class
 
         # The view specifies if it allows subpages. We raise Resolver404 to
         # allow other patterns below this one in the urlconf

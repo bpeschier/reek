@@ -2,6 +2,7 @@ from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
 from ..models import OrderableModel
+from .views import registered_views
 
 
 class BasePage(OrderableModel):
@@ -30,3 +31,6 @@ class BasePage(OrderableModel):
     def slug(self):
         return self.path.split(u'/')[-1] if self.path else u''
 
+    @property
+    def view_class(self):
+        return registered_views.get_by_name(self.view_name)
