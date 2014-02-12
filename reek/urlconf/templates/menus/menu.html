@@ -1,0 +1,15 @@
+{% load page_tags %}
+{% with children=page.children.all %}
+  {% if children.exists %}
+    <ol>
+      {% for child in children %}
+        <li>
+          <a href="{{ child.get_absolute_url }}">{{ child.title }}</a>
+          {% if sublevels > 0 %}
+            {% menu_for child sublevels %}
+          {% endif %}
+        </li>
+      {% endfor %}
+    </ol>
+  {% endif %}
+{% endwith %}

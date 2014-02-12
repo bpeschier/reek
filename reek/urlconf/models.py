@@ -34,3 +34,6 @@ class BasePage(OrderableModel):
     @property
     def view_class(self):
         return registered_views.get_by_name(self.view_name)
+
+    def get_absolute_url(self):
+        return '/{0}/'.format(self.path)
