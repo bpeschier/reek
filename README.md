@@ -4,7 +4,7 @@ What is Reek?
 Reek is a set of building blocks for managing content in a Django environment. It consists of three (almost entirely) individual - but related - parts:
 
 1. A dynamic urlconf so site administrators can effectively rearrange the entire site (because no matter your counter-arguments, they want this badly). It provides custom [class-based views](https://docs.djangoproject.com/en/dev/topics/class-based-views/) (CBV) which can be targeted from the admin.
-2. A mechanism for creating a small publish/review workflow (because "allowing an intern to publish directly is silly"). These can be applied to any Django model and uses [django-reversion](https://github.com/etianen/django-reversion).
+2. A mechanism for creating a small publish/review workflow (because "allowing an intern to publish directly is silly"). These can be applied to any Django model.
 3. A content Field for your models which renders to HTML and has a basic editor for the admin which can include a preview (because your client is adamant about WYSIWYG).
 
 Reek is currently a pet project and should only be used to toy with content management concepts without having to extensively hack on an existing CMS.

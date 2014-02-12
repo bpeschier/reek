@@ -1,0 +1,58 @@
+#container {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+#content, #content-main, #changelist, #changelist-form {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.object-tools {
+    align-self: flex-end;
+    float: none;
+    margin-bottom: 1em;
+}
+
+/* Pages */
+
+.reek-pages {
+    overflow: hidden;
+    position: relative;
+    flex: 1;
+}
+
+.reek-pages ol {
+    padding: 20px;
+    margin: 0;
+}
+
+.reek-pages li {
+    display: block;
+}
+
+.reek-page {
+    display: block;
+    position: absolute;
+    background-color: #fff;
+    border: 1px solid #ccc;
+
+    width: 150px;
+    min-height: 75px;
+
+    top: 0;
+    left: 0;
+}
+
+.module .reek-page.selected {
+    background-color: #FFFFCC;
+}
+
+.reek-page .action-select {
+    display: block;
+    float: right;
+    margin: 2px 3px;
+    cursor: pointer;
+}

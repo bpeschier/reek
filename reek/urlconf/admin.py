@@ -52,5 +52,8 @@ class PageAdmin(admin.ModelAdmin):
 
     class Media:
         css = {
-            "all": ("reek/admin/page.css",)
+            "all": ("reek/admin/css/page.css",)
         }
+        js = [
+            'reek/admin/js/page.js',
+        ]

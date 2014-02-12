@@ -1,5 +1,6 @@
 <li class="{% if node.parent %}reek-child{% else %}reek-root{% endif %} reek-depth-{{ depth }}"
     id="reek-page-{{ node.pk }}"
+    data-depth="{{ depth }}"
     style="order: {{ node.order }};"
     {% if node.parent %}data-reek-parent="reek-page-{{ node.parent.pk }}"{% endif %}
     >

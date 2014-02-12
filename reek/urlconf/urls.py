@@ -1,4 +1,4 @@
-from django.core.urlresolvers import ResolverMatch, Resolver404, RegexURLResolver, LocaleRegexProvider, get_resolver
+from django.core.urlresolvers import ResolverMatch, Resolver404, RegexURLResolver, LocaleRegexProvider, clear_url_caches
 from django.utils.datastructures import MultiValueDict
 from django.utils.encoding import force_text
 from django.utils.regex_helper import normalize
@@ -30,7 +30,7 @@ class PageResolver(RegexURLResolver):
 
         # Let us see if this will clear the root url resolver
         def clear_urlconf(**kwargs):
-            get_resolver(None)._populate()
+            clear_url_caches()
 
         post_save.connect(clear_urlconf, sender=self.page_model)
 
@@ -39,6 +39,10 @@ class PageResolver(RegexURLResolver):
 
     @staticmethod
     def get_subresolver(view_class, path=None):
+        """
+        Create a subresolver for an ApplicationView
+        Resolver will have path as base path/regex.
+        """
         path = r'' if path is None else r'^{}/'.format(path)
         return RegexURLResolver(
             path, urlconf_name=view_class.urlconf_name, namespace=view_class.namespace, app_name=view_class.app_name)
