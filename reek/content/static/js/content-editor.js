@@ -1,10 +1,10 @@
-function RegionEditor(container) {
+function ContentEditor(container) {
   this.container = document.querySelector(container);
 
   this.init();
 }
 
-RegionEditor.prototype = {
+ContentEditor.prototype = {
   init: function() {
     console.log('Container:', this.container);
   }
