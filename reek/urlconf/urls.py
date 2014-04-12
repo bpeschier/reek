@@ -169,10 +169,9 @@ def page_urls(page_model, app_name=None, namespace=None):
 
     Usage:
 
-    urlpatterns = patterns(
-        '',
+    urlpatterns = [
         page_urls(Page),
-    )
+    ]
     """
     return PageResolver(page_model, app_name=app_name, namespace=namespace)
 
@@ -183,23 +182,10 @@ def include_pages(page_model, app_name=None, namespace=None):
 
     Usage:
 
-    urlpatterns = patterns(
-        '',
+    urlpatterns = [
         url(r'^subpath/', include_pages(Page)),
-    )
+    ]
     """
     return URLConfWrapper(page_urls(page_model, app_name, namespace)), app_name, namespace
 
 
-def page_patterns(page_model):
-    """
-    Include page urls as pattern list.
-
-    Usage:
-
-    urlpatterns = patterns(
-        '',
-        url(r'^some-path/$', 'some.view'),
-    ) + page_patterns(Page)
-    """
-    return [page_urls(page_model), ]

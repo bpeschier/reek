@@ -1,11 +1,12 @@
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
-from ..models import OrderableModel
 from .views import registered_views
 
 
-class BasePage(OrderableModel):
+class BasePage(models.Model):
+    order = models.PositiveSmallIntegerField()  # XXX TODO should be editable=False
+
     # Reference to our view
     view_name = models.CharField(max_length=100, verbose_name=_('Page type'), blank=True)
 
