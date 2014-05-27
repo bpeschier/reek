@@ -44,7 +44,7 @@
       idx = idx || 0;
       total = total || 1;
       var y = (this.parent) ? this.parent.y + this.parent.height + 20 : 0;
-      var offsetX = (idx * this.width) + ((idx > 0) ? (idx - 1) * 20 : 0);
+      var offsetX = (idx * this.width) + ((idx > 0) ? (idx * 20) : 0);
       if (!this.parent)
         offsetX = (container.clientWidth / 2) - (this.width / 2);
       var x = (this.parent) ? this.parent.x + (this.parent.width / 2) - (this.parent.getChildWidth() / 2) + offsetX : offsetX;

@@ -15,7 +15,7 @@
       </h2>
     </header>
   </section>
-  {% with children=node.children.all depth=depth|add:1 template="reek/urlconf/admin/page/change_list_node.html" %}
+  {% with children=node.children.all depth=depth|add:1 template="urlfconf/admin/page/change_list_node.html" %}
     {% if children.exists %}
       <ol>
         {% for node in children %}

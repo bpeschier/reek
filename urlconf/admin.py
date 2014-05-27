@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.contrib.admin.views.main import ChangeList
 from django import forms
 
-from .views import registered_views
+from .registry import registry
 
 
 class TreeChangeList(ChangeList):
@@ -32,8 +32,7 @@ class PageForm(forms.ModelForm):
         super(PageForm, self).__init__(*args, **kwargs)
 
         # Fetch registered views to show
-        self.fields['view_name'].widget.choices = ((name, view.verbose_name) for (name, view) in
-                                                   registered_views.items())
+        self.fields['view_name'].widget.choices = registry.get_view_labels()
 
     class Meta:
         widgets = {
