@@ -3,10 +3,6 @@ from django.db import models
 from django.http import Http404
 from django.utils.translation import ugettext_lazy as _
 
-from ..utils import Pool
-
-registered_views = Pool()
-
 
 #
 # Simple pages
@@ -64,13 +60,14 @@ class BasePageView(PageMixin, base.View):
         Check if we have subhomes
         """
         if not self.allows_subpages and self.is_ancestor_view():
-            raise Http404(_("View '%(verbose_name)s' does not allow subpages") %
-                          {'verbose_name': self.__class__.__name__})
+            raise Http404(_("View '%(name)s' does not allow subpages") %
+                          {'name': self.__class__.__name__})
         return super().dispatch(request, *args, **kwargs)
 
 
 class PageView(base.TemplateResponseMixin, BasePageView):
-    verbose_name = 'Simple page'
+    name = 'Simple page'
+    label = 'page'
 
     def get(self, request, **kwargs):
         self.page = self.get_page()
@@ -108,8 +105,8 @@ class ContentMixin(base.ContextMixin):
             try:
                 content = ContentMixin.get_content_by_slug(slug)
             except self.model.DoesNotExist:
-                raise Http404(_("No %(verbose_name)s found matching the slug") %
-                              {'verbose_name': self.model._meta.verbose_name})
+                raise Http404(_("No %(name)s found matching the slug") %
+                              {'name': self.model._meta.name})
         return content
 
     def get_slug_field(self):
@@ -161,7 +158,8 @@ class ContentTemplateMixin(base.TemplateResponseMixin, ContentMixin):
 
 
 class ContentView(ContentTemplateMixin, ContentMixin, BasePageView):
-    verbose_name = 'Content page'
+    name = 'Content page'
+    label = 'content_page'
 
     def get(self, request, **kwargs):
         self.page = self.get_page()
@@ -180,5 +178,6 @@ class ApplicationView:
     namespace = None
     app_name = None
 
-    verbose_name = None
+    name = None
+    label = None
     allows_subpages = True
