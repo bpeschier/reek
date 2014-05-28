@@ -4,7 +4,7 @@
     flex-direction: column;
 }
 
-#content, #content-main, #changelist, #changelist-form {
+#content, #content-main, #changelist, #changelist-form, .reek-pages {
     flex: 1;
     display: flex;
     flex-direction: column;
@@ -19,31 +19,37 @@
 /* Pages */
 
 .reek-pages {
-    overflow: hidden;
-    position: relative;
-    flex: 1;
+    padding: 20px;
 }
 
 .reek-pages ol {
-    padding: 20px;
+    padding: 0;
     margin: 0;
+}
+
+.reek-pages > ol {
+    flex: 1;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    position: relative;
 }
 
 .reek-pages li {
     display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
 }
 
 .reek-page {
     display: block;
-    position: absolute;
     background-color: #fff;
     border: 1px solid #ccc;
 
-    width: 150px;
-    min-height: 75px;
+    width: 120px;
+    min-height: 50px;
 
-    top: 0;
-    left: 0;
 }
 
 .module .reek-page.selected {
