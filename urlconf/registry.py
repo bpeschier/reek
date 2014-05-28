@@ -10,20 +10,20 @@ class NotRegistered(Exception):
 
 
 class Registry:
-    _registry = {}
+    def __init__(self):
+        self._registry = {}
 
     def register(self, view_class):
-        print(view_class)
         if view_class.label in self._registry:
             raise AlreadyRegistered(
-                _('View %s is already registered') % view_class.__name__
+                _('View "%s" is already registered') % view_class.label
             )
         else:
             self._registry[view_class.label] = view_class
 
     def get(self, label):
         if label not in self._registry:
-            raise NotRegistered(_('View %s is not registered') % label)
+            raise NotRegistered(_('View "%s" is not registered') % label)
         return self._registry[label]
 
     def get_views(self):
