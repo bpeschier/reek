@@ -1,0 +1,3 @@
+class ContentAdminMixin:
+    pass
+
