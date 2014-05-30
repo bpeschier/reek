@@ -5,11 +5,20 @@ from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.views.generic.list import ListView
 
 
-#
-# Viewset
-#
+class ViewSet:
+    """
+    ViewSets are collections of views.
 
-class ModelViewSet:
+    They expose a single urls property which returns the patterns for
+    the underlying views.
+    """
+
+    @property
+    def urls(self):
+        raise NotImplemented
+
+
+class ModelViewSet(ViewSet):
     model = None
 
     operations = ('list', 'create', 'detail', 'update', 'delete', )
@@ -18,9 +27,9 @@ class ModelViewSet:
 
     list_pattern = r'^$'
     create_pattern = r'^add/$'
-    detail_pattern = r'^(?P<pk>(.+)/preview/$'
-    update_pattern = r'^(?P<pk>(.+)/edit/$'
-    delete_pattern = r'^(?P<pk>(.+)/delete/$'
+    detail_pattern = r'^(?P<pk>.+)/preview/$'
+    update_pattern = r'^(?P<pk>.+)/edit/$'
+    delete_pattern = r'^(?P<pk>.+)/delete/$'
 
     list_view = ListView
     create_view = CreateView
@@ -28,8 +37,9 @@ class ModelViewSet:
     update_view = UpdateView
     delete_view = DeleteView
 
-    def __init__(self):
-        pass
+    def __init__(self, model=None):
+        if model is not None:
+            self.model = model
 
     #
     # Views

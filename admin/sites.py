@@ -1,4 +1,7 @@
+from functools import reduce
+
 from django.conf.urls import patterns, url
+
 from django.utils.translation import ugettext_lazy as _
 
 from .views import IndexView
@@ -26,7 +29,7 @@ class AdminSite:
                 _('Section %s is already registered') % section_class.label,
             )
         else:
-            self._registry[section_class.label] = section_class
+            self._registry[section_class.label] = section_class()  # TODO: instance or class?
 
     def get(self, label):
         if label not in self._registry:
@@ -35,11 +38,15 @@ class AdminSite:
 
     @property
     def sections(self):
-        return self._registry.values()
+        return list(self._registry.values())
+
+    @property
+    def section_urls(self):
+        return reduce(lambda a, b: a + b, [section.urls for section in self.sections])
 
     @property
     def urls(self):
         return patterns(
             '',
             url(r'^$', IndexView.as_view(site=self), name='index')
-        )
+        ) + self.section_urls
