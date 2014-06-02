@@ -1,6 +1,7 @@
 from collections import OrderedDict
 
 from django.conf.urls import patterns, url
+from django.views.generic.base import View
 
 from .resolver import PageResolver
 
@@ -10,14 +11,24 @@ from .resolver import PageResolver
 #
 
 class URL:
+    # Tracks each time a URL instance is created. Used to retain order.
+    creation_counter = 0
+
     def __init__(self, pattern, view, name=None):
         self.pattern = pattern
         self.name = name
         self.view = view
 
-    def as_url(self, name):
-        name = self.name if self.name is not None else name  # Use the overriden name if set
-        return url(self.pattern, self.view, name=name)
+        self.creation_counter = URL.creation_counter
+        URL.creation_counter += 1
+
+    def as_url(self, name=None, name_kwargs=None, view_kwargs=None):
+        name_kwargs = {} if name_kwargs is None else name_kwargs
+        view_kwargs = {} if view_kwargs is None else view_kwargs
+
+        name = name if self.name is None else self.name  # Use the overriden name if set
+        name = name.format(**name_kwargs)
+        return url(self.pattern, self.view.as_view(**view_kwargs), name=name)
 
 
 class URLsMeta(type):
@@ -65,9 +76,18 @@ class BaseURLs:
     def get_view_name_kwargs(self):
         return {}
 
+    def get_view_kwargs(self):
+        return {}
+
     def as_urls(self):
-        return patterns('', *[declared_url.as_url(name.format(**self.get_view_name_kwargs())) for declared_url, name in
-                              self.declared_urls.items()])
+        return patterns('', *[
+            declared_url.as_url(
+                name=name,
+                view_kwargs=self.get_view_kwargs(),
+                name_kwargs=self.get_view_name_kwargs()
+            )
+            for name, declared_url in self.declared_urls.items()
+        ])
 
 
 class URLs(BaseURLs, metaclass=URLsMeta):

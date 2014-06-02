@@ -1,4 +1,4 @@
 default_app_config = 'admin.apps.AdminAppConfig'
 
-from .admins import AdminSection, ModelAdminSection
+from .admins import Admin, ModelAdmin
 from .sites import AdminSite
