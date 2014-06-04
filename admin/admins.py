@@ -13,10 +13,6 @@ class Admin(urls.URLs):
 class ModelAdmin(Admin):
     model = None
 
-    # XXX how to define which fields we want to update?
-    # - Custom View? Easiest for us
-    # - ModelAdmin-field-setting? Easiest for user, but ugly
-
     list = urls.URL(r'^$', views.ListView, name='{app}_{model}_list')
     create = urls.URL(r'^add/$', views.CreateView, name='{app}_{model}_create')
     detail = urls.URL(r'^(?P<pk>.+)/preview/$', views.DetailView, name='{app}_{model}_detail')
@@ -24,6 +20,7 @@ class ModelAdmin(Admin):
     delete = urls.URL(r'^(?P<pk>.+)/delete/$', views.DeleteView, name='{app}_{model}_delete')
 
     def __init__(self, model=None):
+        super().__init__()
         self.model = self.model if model is None else model
         if self.model is None:
             raise ImproperlyConfigured('Model class is not set on ModelAdmin')

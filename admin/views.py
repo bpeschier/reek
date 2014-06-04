@@ -1,17 +1,30 @@
-from django.views.generic.base import TemplateView, ContextMixin
+from django.views.generic.base import TemplateView, ContextMixin, TemplateResponseMixin
 from django.views.generic import detail as detail_views
 from django.views.generic import edit as edit_views
 from django.views.generic import list as list_views
 from django.forms import models as model_forms
 
 
-class AdminContextMixin(ContextMixin):
+class AdminContextMixin(TemplateResponseMixin, ContextMixin):
     site = None
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['site'] = self.site
         return context
+
+    def get_template_names(self):
+        names = super().get_template_names()
+        if hasattr(self, 'model'):
+            info = dict(
+                app=self.model._meta.app_label,
+                model=self.model._meta.model_name,
+                suffix=self.template_name_suffix
+            )
+            return ['admin/{app}/{model}{suffix}.html'.format(**info)] + names + [
+                'admin/base{suffix}.html'.format(**info)]
+        else:
+            return names
 
 
 class LoginView:
@@ -34,7 +47,7 @@ class ListView(list_views.ListView):
     pass
 
 
-class CreateView(edit_views.CreateView):
+class CreateView(AdminContextMixin, edit_views.CreateView):
     pass
 
 

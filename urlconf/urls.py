@@ -1,7 +1,7 @@
 from collections import OrderedDict
+import copy
 
-from django.conf.urls import patterns, url
-from django.views.generic.base import View
+from django.conf.urls import patterns, url as conf_url
 
 from .resolver import PageResolver
 
@@ -21,14 +21,6 @@ class URL:
 
         self.creation_counter = URL.creation_counter
         URL.creation_counter += 1
-
-    def as_url(self, name=None, name_kwargs=None, view_kwargs=None):
-        name_kwargs = {} if name_kwargs is None else name_kwargs
-        view_kwargs = {} if view_kwargs is None else view_kwargs
-
-        name = name if self.name is None else self.name  # Use the overriden name if set
-        name = name.format(**name_kwargs)
-        return url(self.pattern, self.view.as_view(**view_kwargs), name=name)
 
 
 class URLsMeta(type):
@@ -73,20 +65,29 @@ class BaseURLs:
     declared_urls = OrderedDict()
     base_urls = OrderedDict()
 
+    def __init__(self):
+        # base_urls is the *class*-wide definition of urls
+        self.urls = copy.deepcopy(self.base_urls)
+
     def get_view_name_kwargs(self):
         return {}
 
     def get_view_kwargs(self):
         return {}
 
+    def get_view_name(self, attr_name, url):
+        name_kwargs = getattr(self, 'get_{}_name_kwargs'.format(attr_name), self.get_view_name_kwargs)()
+        name = attr_name if url.name is None else url.name  # Use the overridden name if set
+        return name.format(**name_kwargs)
+
+    def get_view(self, attr_name, url):
+        view_kwargs = getattr(self, 'get_{}_view_kwargs'.format(attr_name), self.get_view_kwargs)()
+        return url.view.as_view(**view_kwargs)
+
     def as_urls(self):
         return patterns('', *[
-            declared_url.as_url(
-                name=name,
-                view_kwargs=self.get_view_kwargs(),
-                name_kwargs=self.get_view_name_kwargs()
-            )
-            for name, declared_url in self.declared_urls.items()
+            conf_url(url.pattern, self.get_view(name, url), name=self.get_view_name(name, url))
+            for name, url in self.urls.items()
         ])
 
 
