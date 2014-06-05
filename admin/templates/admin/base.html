@@ -33,7 +33,9 @@
         <nav>
           <ul>
             {% for admin in site.admins %}
-              <li>{{ admin }}</li>
+              {% with url_name=admin.urls.list.name %}
+                <li><a href="{% url url_name %}">{{ admin.get_label }}</a>{{ url_name }}</li>
+              {% endwith %}
             {% endfor %}
           </ul>
         </nav>

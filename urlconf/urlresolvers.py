@@ -1,3 +1,4 @@
+import functools
 from django.core.urlresolvers import ResolverMatch, Resolver404, RegexURLResolver, LocaleRegexProvider, clear_url_caches
 from django.utils.datastructures import MultiValueDict
 from django.utils.encoding import force_text
@@ -27,6 +28,10 @@ class PageResolver(RegexURLResolver):
         self._reverse_dict = {}
         self._namespace_dict = {}
         self._app_dict = {}
+
+        # urlpatterns
+        self._callback_strs = set()
+        self._populated = False
 
         # Let us see if this will clear the root url resolver
         def clear_urlconf(**kwargs):
@@ -65,28 +70,53 @@ class PageResolver(RegexURLResolver):
         self._namespace_dict[language_code] = namespaces
         self._app_dict[language_code] = apps
 
-    @staticmethod
-    def _populate_subresolver(resolver, lookups, namespaces, apps):
+        self._populated = True
+
+    def _populate_subresolver(self, resolver, lookups, namespaces, apps):
         # XXX emulate part of _populate :/
+
+        lookups = MultiValueDict()
+        namespaces = {}
+        apps = {}
+        language_code = get_language()
+
+        if hasattr(resolver, '_callback_str'):
+            self._callback_strs.add(resolver._callback_str)
+        elif hasattr(resolver, '_callback'):
+            callback = resolver._callback
+            if isinstance(callback, functools.partial):
+                callback = callback.func
+
+            if not hasattr(callback, '__name__'):
+                lookup_str = callback.__module__ + "." + callback.__class__.__name__
+            else:
+                lookup_str = callback.__module__ + "." + callback.__name__
+            self._callback_strs.add(lookup_str)
         p_pattern = resolver.regex.pattern
         if p_pattern.startswith('^'):
             p_pattern = p_pattern[1:]
-        if resolver.namespace:
-            namespaces[resolver.namespace] = (p_pattern, resolver)
-            if resolver.app_name:
-                apps.setdefault(resolver.app_name, []).append(resolver.namespace)
+        if isinstance(resolver, RegexURLResolver):
+            if resolver.namespace:
+                namespaces[resolver.namespace] = (p_pattern, resolver)
+                if resolver.app_name:
+                    apps.setdefault(resolver.app_name, []).append(resolver.namespace)
+            else:
+                parent_pat = resolver.regex.pattern
+                for name in resolver.reverse_dict:
+                    for matches, pat, defaults in resolver.reverse_dict.getlist(name):
+                        new_matches = normalize(parent_pat + pat)
+                        lookups.appendlist(name,
+                            (new_matches, p_pattern + pat, dict(defaults, **resolver.default_kwargs)))
+                for namespace, (prefix, sub_pattern) in resolver.namespace_dict.items():
+                    namespaces[namespace] = (p_pattern + prefix, sub_pattern)
+                for app_name, namespace_list in resolver.app_dict.items():
+                    apps.setdefault(app_name, []).extend(namespace_list)
+                self._callback_strs.update(resolver._callback_strs)
         else:
-            parent = normalize(resolver.regex.pattern)
-            for name in resolver.reverse_dict:
-                for matches, pat, defaults in resolver.reverse_dict.getlist(name):
-                    new_matches = []
-                    for piece, p_args in parent:
-                        new_matches.extend((piece + suffix, p_args + args) for (suffix, args) in matches)
-                    lookups.appendlist(name, (new_matches, p_pattern + pat, dict(defaults, **resolver.default_kwargs)))
-            for namespace, (prefix, sub_pattern) in resolver.namespace_dict.items():
-                namespaces[namespace] = (p_pattern + prefix, sub_pattern)
-            for app_name, namespace_list in resolver.app_dict.items():
-                apps.setdefault(app_name, []).extend(namespace_list)
+            bits = normalize(p_pattern)
+            lookups.appendlist(resolver.callback, (bits, p_pattern, resolver.default_args))
+            if resolver.name is not None:
+                lookups.appendlist(resolver.name, (bits, p_pattern, resolver.default_args))
 
     def find_page_for_path(self, path):
         """
@@ -146,5 +176,5 @@ class PageResolver(RegexURLResolver):
                 'page': page,
                 'slug': page_slug,
                 'subpage_slugs': subpage_slugs,
-                }
+            }
             return ResolverMatch(view_class.as_view(), [], kwargs, app_name=self.app_name, namespaces=[self.namespace])

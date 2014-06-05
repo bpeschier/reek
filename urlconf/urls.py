@@ -3,7 +3,7 @@ import copy
 
 from django.conf.urls import patterns, url as conf_url
 
-from .resolver import PageResolver
+from .urlresolvers import PageResolver
 
 
 #
@@ -21,6 +21,9 @@ class URL:
 
         self.creation_counter = URL.creation_counter
         URL.creation_counter += 1
+
+    def as_url(self):
+        return conf_url(self.pattern, self.view, name=self.name)
 
 
 class URLsMeta(type):
@@ -69,6 +72,11 @@ class BaseURLs:
         # base_urls is the *class*-wide definition of urls
         self.urls = copy.deepcopy(self.base_urls)
 
+        # Update based on this URLs
+        for name, url in self.urls.items():
+            url.name = self.get_view_name(name, url)
+            url.view = self.get_view(name, url)
+
     def get_view_name_kwargs(self):
         return {}
 
@@ -85,10 +93,7 @@ class BaseURLs:
         return url.view.as_view(**view_kwargs)
 
     def as_urls(self):
-        return patterns('', *[
-            conf_url(url.pattern, self.get_view(name, url), name=self.get_view_name(name, url))
-            for name, url in self.urls.items()
-        ])
+        return patterns('', *[url.as_url() for url in self.urls.values()])
 
 
 class URLs(BaseURLs, metaclass=URLsMeta):
