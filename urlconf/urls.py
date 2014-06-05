@@ -2,10 +2,10 @@ from collections import OrderedDict
 import copy
 
 from django.conf.urls import patterns, url as conf_url
-from django.core.urlresolvers import reverse
 from django.views.generic.base import View
 
 from .urlresolvers import PageResolver
+
 
 
 #
@@ -20,12 +20,24 @@ class URL:
         self.pattern = pattern
         self.name = name
         self.view = view
+        self.namespace = None
 
         self.creation_counter = URL.creation_counter
         URL.creation_counter += 1
 
     def as_url(self):
         return conf_url(self.pattern, self.view, name=self.name)
+
+    @property
+    def reverse_name(self):
+        if self.namespace is None:
+            return self.name
+        else:
+            return '{ns}:{name}'.format(ns=self.namespace, name=self.name)
+
+    def update_instance(self, name, view):
+        self.name = name
+        self.view = view
 
 
 class URLsMeta(type):
@@ -76,8 +88,10 @@ class BaseURLs:
 
         # Update based on this URLs
         for name, url in self.urls.items():
-            url.name = self.get_view_name(name, url)
-            url.view = self.get_view(name, url)
+            url.update_instance(
+                self.get_view_name(name, url),
+                self.get_view(name, url),
+            )
 
     def get_view_name_kwargs(self):
         return {}

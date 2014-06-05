@@ -1,4 +1,4 @@
-from django.conf.urls import url, include
+from django.conf.urls import url as conf_url, include
 from django.core.exceptions import ImproperlyConfigured
 
 from urlconf import urls
@@ -9,12 +9,16 @@ from . import views
 class Admin(urls.URLs):
     label = None
 
+    def __init__(self, namespace=None):
+        super().__init__()
+        self.namespace = namespace
+
     def get_label(self):
         return self.label
 
     def as_urls(self):
         # Prefix the urls with the app and model-name
-        return url(r'^{label}/'.format(label=self.get_label()), include(super().as_urls()))
+        return conf_url(r'^{label}/'.format(label=self.get_label()), include(super().as_urls()))
 
 
 class ModelAdmin(Admin):
@@ -27,11 +31,15 @@ class ModelAdmin(Admin):
     update = urls.URL(r'^(?P<pk>.+)/edit/$', views.UpdateView, name='{app}_{model}_update')
     delete = urls.URL(r'^(?P<pk>.+)/delete/$', views.DeleteView, name='{app}_{model}_delete')
 
-    def __init__(self, model=None):
-        super().__init__()
+    def __init__(self, namespace=None, model=None):
+        super().__init__(namespace=namespace)
         self.model = self.model if model is None else model
         if self.model is None:
             raise ImproperlyConfigured('Model class is not set on ModelAdmin')
+
+        # XXX we need a thoughtful way to propagate the namespace to the URL so it can create a reverse_name
+        for url in self.urls.values():
+            url.namespace = self.namespace
 
     def get_label(self):
         return self.label or '{app}/{model}'.format(**self.get_view_name_kwargs())

@@ -17,6 +17,7 @@ class NotRegistered(Exception):
 
 class AdminSite:
     template_admin_base = 'admin/base.html'
+    namespace = 'admin'
 
     name = 'Django administration'
 
@@ -29,7 +30,7 @@ class AdminSite:
                 _('Section %s is already registered') % admin_class.label,
             )
         else:
-            self._registry[admin_class.label] = admin_class()  # TODO: instance or class?
+            self._registry[admin_class.label] = admin_class(namespace=self.namespace)  # TODO: instance or class?
 
     def get(self, label):
         if label not in self._registry:
@@ -44,13 +45,13 @@ class AdminSite:
     def admin_urls(self):
         return reduce(lambda a, b: a + b, [admin.as_urls() for admin in self.admins])
 
-    @property
-    def urls(self):
+    def as_urls(self):
         return include(
             patterns(
                 '',
                 url(r'^$', IndexView.as_view(site=self), name='index'),
                 self.admin_urls
             ),
-            namespace='admin'
+            app_name='admin',
+            namespace=self.namespace
         )
