@@ -43,7 +43,7 @@ class IndexView(AdminContextMixin, TemplateView):
     template_name = 'admin/index.html'
 
 
-class ListView(list_views.ListView):
+class ListView(AdminContextMixin, list_views.ListView):
     pass
 
 
@@ -51,34 +51,12 @@ class CreateView(AdminContextMixin, edit_views.CreateView):
     pass
 
 
-class DetailView(detail_views.DetailView):
+class DetailView(AdminContextMixin, detail_views.DetailView):
     pass
 
 
-class UpdateView(edit_views.UpdateView):
-    def get_form_class(self):
-        # XXX extract into mixin for other views, rethink how we
-        # customise stuff in ModelAdmin
-
-        if self.form_class:
-            return self.form_class
-        else:
-            if self.model is not None:
-                # If a model has been explicitly provided, use it
-                model = self.model
-            elif hasattr(self, 'object') and self.object is not None:
-                # If this view is operating on a single object, use
-                # the class of that object
-                model = self.object.__class__
-            else:
-                # Try to get a queryset and extract the model class
-                # from that
-                model = self.get_queryset().model
-
-            if self.fields is None:
-                self.fields = [f.name for f in model._meta.fields]
-
-            return model_forms.modelform_factory(model, fields=self.fields)
+class UpdateView(AdminContextMixin, edit_views.UpdateView):
+    pass
 
 
 class DeleteView(edit_views.DeleteView):

@@ -9,9 +9,17 @@ from . import views
 class Admin(urls.URLs):
     label = None
 
+    def get_label(self):
+        return self.label
+
+    def as_urls(self):
+        # Prefix the urls with the app and model-name
+        return url(r'^{label}/'.format(label=self.get_label()), include(super().as_urls()))
+
 
 class ModelAdmin(Admin):
     model = None
+    fields = '__all__'
 
     list = urls.URL(r'^$', views.ListView, name='{app}_{model}_list')
     create = urls.URL(r'^add/$', views.CreateView, name='{app}_{model}_create')
@@ -25,9 +33,8 @@ class ModelAdmin(Admin):
         if self.model is None:
             raise ImproperlyConfigured('Model class is not set on ModelAdmin')
 
-    def as_urls(self):
-        # Prefix the urls with the app and model-name
-        return url(r'^{app}/{model}/'.format(**self.get_view_name_kwargs()), include(super().as_urls()))
+    def get_label(self):
+        return self.label or '{app}/{model}'.format(**self.get_view_name_kwargs())
 
     #
     # Helpers
@@ -49,3 +56,14 @@ class ModelAdmin(Admin):
         return {
             'model': self.model,
         }
+
+    def get_form_view_kwargs(self):
+        kwargs = self.get_view_kwargs()
+        kwargs['fields'] = self.fields
+        return kwargs
+
+    def get_update_view_kwargs(self):
+        return self.get_form_view_kwargs()
+
+    def get_create_view_kwargs(self):
+        return self.get_form_view_kwargs()
