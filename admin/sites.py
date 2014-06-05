@@ -46,8 +46,11 @@ class AdminSite:
 
     @property
     def urls(self):
-        return patterns(
-            '',
-            url(r'^$', IndexView.as_view(site=self), name='index'),
-            self.admin_urls
+        return include(
+            patterns(
+                '',
+                url(r'^$', IndexView.as_view(site=self), name='index'),
+                self.admin_urls
+            ),
+            namespace='admin'
         )

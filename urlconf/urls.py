@@ -2,6 +2,7 @@ from collections import OrderedDict
 import copy
 
 from django.conf.urls import patterns, url as conf_url
+from django.core.urlresolvers import reverse
 
 from .urlresolvers import PageResolver
 
