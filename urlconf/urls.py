@@ -3,6 +3,7 @@ import copy
 
 from django.conf.urls import patterns, url as conf_url
 from django.core.urlresolvers import reverse
+from django.views.generic.base import View
 
 from .urlresolvers import PageResolver
 
@@ -90,8 +91,11 @@ class BaseURLs:
         return name.format(**name_kwargs)
 
     def get_view(self, attr_name, url):
-        view_kwargs = getattr(self, 'get_{}_view_kwargs'.format(attr_name), self.get_view_kwargs)()
-        return url.view.as_view(**view_kwargs)
+        if isinstance(url.view, type):
+            view_kwargs = getattr(self, 'get_{}_view_kwargs'.format(attr_name), self.get_view_kwargs)()
+            return url.view.as_view(**view_kwargs)
+        else:
+            return url.view
 
     def as_urls(self):
         return patterns('', *[url.as_url() for url in self.urls.values()])
