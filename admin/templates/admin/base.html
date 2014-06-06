@@ -33,7 +33,7 @@
         <nav>
           <ul>
             {% for admin in site.admins %}
-              {% with url_name=admin.urls.list.reverse_name %}
+              {% with url_name=admin.urls.index.reverse_name %}
                 <li><a href="{% url url_name %}">{{ admin.get_label }}</a></li>
               {% endwith %}
             {% endfor %}

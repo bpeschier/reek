@@ -24,7 +24,7 @@ class ModelAdmin(Admin):
     model = None
     fields = '__all__'
 
-    list = urls.URL(r'^$', views.ListView, name='{app}_{model}_list')
+    index = urls.URL(r'^$', views.ListView, name='{app}_{model}_index')
     create = urls.URL(r'^add/$', views.CreateView, name='{app}_{model}_create')
     detail = urls.URL(r'^(?P<pk>.+)/preview/$', views.DetailView, name='{app}_{model}_detail')
     update = urls.URL(r'^(?P<pk>.+)/edit/$', views.UpdateView, name='{app}_{model}_update')

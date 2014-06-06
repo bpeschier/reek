@@ -21,6 +21,8 @@ class AdminSite:
 
     name = 'Django administration'
 
+    index_view = IndexView
+
     def __init__(self):
         self._registry = {}
 
@@ -49,7 +51,7 @@ class AdminSite:
         return include(
             patterns(
                 '',
-                url(r'^$', IndexView.as_view(site=self), name='index'),
+                url(r'^$', self.index_view.as_view(site=self), name='index'),
                 self.admin_urls
             ),
             app_name='admin',
