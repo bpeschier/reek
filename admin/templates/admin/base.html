@@ -31,13 +31,19 @@
 
       {% block sidebar %}
         <nav>
-          <ul>
-            {% for admin in site.admins %}
-              {% with url_name=admin.urls.index.reverse_name %}
-                <li><a href="{% url url_name %}">{{ admin.get_label }}</a></li>
-              {% endwith %}
-            {% endfor %}
-          </ul>
+          {% for section in site.sections %}
+            <section>
+              <h2>{{ section.get_label }}</h2>
+              <ul>
+                {% for admin in section.admins %}
+                  {% with url_name=admin.urls.index.reverse_name %}
+                    <li><a href="{% url url_name %}">{{ admin.get_label }}</a></li>
+                  {% endwith %}
+                {% endfor %}
+              </ul>
+            </section>
+
+        {% endfor %}
         </nav>
       {% endblock sidebar %}
 

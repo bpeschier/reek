@@ -1,15 +1,24 @@
-from django.conf.urls import url as conf_url, include
+from functools import reduce
+from django.apps.registry import apps
+
+from django.conf.urls import url as conf_url, include, patterns
+
 from django.core.exceptions import ImproperlyConfigured
 
+from django.utils.translation import ugettext_lazy as _
+
 from urlconf import urls
+
 from . import views
+
+from .sites import AlreadyRegistered, NotRegistered
 
 
 class Admin(urls.URLs):
     label = None
 
-    def __init__(self, site=None):
-        self.site = site
+    def __init__(self, section=None):
+        self.section = section
         super().__init__()
 
     def get_label(self):
@@ -18,6 +27,51 @@ class Admin(urls.URLs):
     def as_urls(self):
         # Prefix the urls with the app and model-name
         return conf_url(r'^{label}/'.format(label=self.get_label()), include(super().as_urls()))
+
+
+class AdminSection(Admin):
+    def __init__(self, site=None):
+        self._registry = {}
+        self.site = site
+        super().__init__()
+
+    def register(self, admin_class):
+        if admin_class.label in self._registry:
+            raise AlreadyRegistered(
+                _('Admin %s is already registered') % admin_class.label,
+            )
+        else:
+            self._registry[admin_class.label] = self.init_admin(admin_class)
+
+    @property
+    def admins(self):
+        return list(self._registry.values())
+
+    def init_admin(self, admin_class):
+        return admin_class(section=self)
+
+    def get(self, label):
+        if label not in self._registry:
+            raise NotRegistered(_('Admin %s is not registered') % label)
+        return self._registry[label]
+
+    @property
+    def admin_urls(self):
+        return reduce(lambda a, b: a + b, [admin.as_urls() for admin in self.admins])
+
+    def as_urls(self):
+        return conf_url(r'^{label}/'.format(label=self.get_label()), include(patterns('', self.admin_urls)))
+
+
+class AppAdminSection(AdminSection):
+    app = None
+
+    def __init__(self, app_label=None, **kwargs):
+        self.app = apps.get_app_config(app_label)
+        super().__init__(**kwargs)
+
+    def get_label(self):
+        return self.label or self.app.label
 
 
 class ModelAdmin(Admin):
@@ -40,11 +94,11 @@ class ModelAdmin(Admin):
         url.update_instance(
             self.get_view_name(name, url),
             self.get_view(name, url),
-            namespace=self.site.namespace
+            namespace=self.section.site.namespace
         )
 
     def get_label(self):
-        return self.label or '{app}/{model}'.format(**self.get_view_name_kwargs())
+        return self.label or self.get_model_name()
 
     #
     # Helpers
