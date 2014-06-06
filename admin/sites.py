@@ -48,7 +48,8 @@ class AdminSite:
     def section_urls(self):
         return reduce(lambda a, b: a + b, [section.as_urls() for section in self.sections])
 
-    def as_urls(self):
+    @property
+    def urls(self):
         return include(
             patterns(
                 '',

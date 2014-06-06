@@ -25,14 +25,16 @@ class Admin(urls.URLs):
         return self.label
 
     def as_urls(self):
-        # Prefix the urls with the app and model-name
-        return conf_url(r'^{label}/'.format(label=self.get_label()), include(super().as_urls()))
+        # Prefix the urls with the label
+        return patterns('', conf_url(r'^{label}/'.format(label=self.get_label()), include(super().as_urls())))
 
 
 class AdminSection(Admin):
+    index = urls.URL(r'^$', views.SectionIndexView, name='{section}_index')
+
     def __init__(self, site=None):
         self._registry = {}
-        self.site = site
+        site.register(self)
         super().__init__()
 
     def register(self, admin_class):
@@ -42,6 +44,13 @@ class AdminSection(Admin):
             )
         else:
             self._registry[admin_class.label] = self.init_admin(admin_class)
+
+    def update_url(self, name, url):
+        url.update_instance(
+            self.get_view_name(name, url),
+            self.get_view(name, url),
+            namespace=self.site.namespace
+        )
 
     @property
     def admins(self):
@@ -59,8 +68,10 @@ class AdminSection(Admin):
     def admin_urls(self):
         return reduce(lambda a, b: a + b, [admin.as_urls() for admin in self.admins])
 
-    def as_urls(self):
-        return conf_url(r'^{label}/'.format(label=self.get_label()), include(patterns('', self.admin_urls)))
+    def get_view_name_kwargs(self):
+        return {
+            'section': self.get_label()
+        }
 
 
 class AppAdminSection(AdminSection):

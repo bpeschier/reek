@@ -33,7 +33,7 @@
         <nav>
           {% for section in site.sections %}
             <section>
-              <h2>{{ section.get_label }}</h2>
+              <h2><a href="{% url section.urls.index.reverse_name %}">{{ section.get_label }}</a></h2>
               <ul>
                 {% for admin in section.admins %}
                   {% with url_name=admin.urls.index.reverse_name %}
@@ -43,7 +43,7 @@
               </ul>
             </section>
 
-        {% endfor %}
+          {% endfor %}
         </nav>
       {% endblock sidebar %}
 

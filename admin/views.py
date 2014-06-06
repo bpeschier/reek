@@ -44,6 +44,10 @@ class IndexView(AdminContextMixin, TemplateView):
     template_name = 'admin/index.html'
 
 
+class SectionIndexView(AdminContextMixin, TemplateView):
+    template_name = 'admin/section_index.html'
+
+
 class ListView(AdminContextMixin, list_views.ListView):
     pass
 
