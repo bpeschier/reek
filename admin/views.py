@@ -21,10 +21,9 @@ class AdminContextMixin(TemplateResponseMixin, ContextMixin):
                 model=self.model._meta.model_name,
                 suffix=self.template_name_suffix
             )
-            # Add our specific model template first,
-            # and add a generic template as a final fallback
-            return ['admin/{app}/{model}{suffix}.html'.format(**info)] + names + [
-                'admin/base{suffix}.html'.format(**info)]
+            # Overwrite with our specific model template first,
+            # and add a generic template as a fallback
+            return ['admin/{app}/{model}{suffix}.html'.format(**info), 'admin/base{suffix}.html'.format(**info)]
         else:
             return names
 
