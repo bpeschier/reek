@@ -2,16 +2,15 @@ from django.conf.urls import url as conf_url, include
 from django.core.exceptions import ImproperlyConfigured
 
 from urlconf import urls
-
 from . import views
 
 
 class Admin(urls.URLs):
     label = None
 
-    def __init__(self, namespace=None):
+    def __init__(self, site=None):
+        self.site = site
         super().__init__()
-        self.namespace = namespace
 
     def get_label(self):
         return self.label
@@ -31,15 +30,18 @@ class ModelAdmin(Admin):
     update = urls.URL(r'^(?P<pk>.+)/edit/$', views.UpdateView, name='{app}_{model}_update')
     delete = urls.URL(r'^(?P<pk>.+)/delete/$', views.DeleteView, name='{app}_{model}_delete')
 
-    def __init__(self, namespace=None, model=None):
-        super().__init__(namespace=namespace)
+    def __init__(self, model=None, **kwargs):
+        super().__init__(**kwargs)
         self.model = self.model if model is None else model
         if self.model is None:
             raise ImproperlyConfigured('Model class is not set on ModelAdmin')
 
-        # XXX we need a thoughtful way to propagate the namespace to the URL so it can create a reverse_name
-        for url in self.urls.values():
-            url.namespace = self.namespace
+    def update_url(self, name, url):
+        url.update_instance(
+            self.get_view_name(name, url),
+            self.get_view(name, url),
+            namespace=self.site.namespace
+        )
 
     def get_label(self):
         return self.label or '{app}/{model}'.format(**self.get_view_name_kwargs())

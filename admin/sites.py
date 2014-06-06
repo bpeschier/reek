@@ -30,7 +30,7 @@ class AdminSite:
                 _('Section %s is already registered') % admin_class.label,
             )
         else:
-            self._registry[admin_class.label] = admin_class(namespace=self.namespace)  # TODO: instance or class?
+            self._registry[admin_class.label] = admin_class(site=self)  # TODO: instance or class?
 
     def get(self, label):
         if label not in self._registry:

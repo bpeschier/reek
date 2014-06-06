@@ -2,10 +2,8 @@ from collections import OrderedDict
 import copy
 
 from django.conf.urls import patterns, url as conf_url
-from django.views.generic.base import View
 
 from .urlresolvers import PageResolver
-
 
 
 #
@@ -16,11 +14,11 @@ class URL:
     # Tracks each time a URL instance is created. Used to retain order.
     creation_counter = 0
 
-    def __init__(self, pattern, view, name=None):
+    def __init__(self, pattern, view, name=None, namespace=None):
         self.pattern = pattern
         self.name = name
         self.view = view
-        self.namespace = None
+        self.namespace = namespace
 
         self.creation_counter = URL.creation_counter
         URL.creation_counter += 1
@@ -35,9 +33,11 @@ class URL:
         else:
             return '{ns}:{name}'.format(ns=self.namespace, name=self.name)
 
-    def update_instance(self, name, view):
+    def update_instance(self, name, view, namespace=None):
         self.name = name
         self.view = view
+        if namespace is not None:
+            self.namespace = namespace
 
 
 class URLsMeta(type):
@@ -86,12 +86,18 @@ class BaseURLs:
         # base_urls is the *class*-wide definition of urls
         self.urls = copy.deepcopy(self.base_urls)
 
+        self.update_urls()
+
+    def update_urls(self):
         # Update based on this URLs
         for name, url in self.urls.items():
-            url.update_instance(
-                self.get_view_name(name, url),
-                self.get_view(name, url),
-            )
+            self.update_url(name, url)
+
+    def update_url(self, name, url):
+        url.update_instance(
+            self.get_view_name(name, url),
+            self.get_view(name, url),
+        )
 
     def get_view_name_kwargs(self):
         return {}
