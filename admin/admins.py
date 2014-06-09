@@ -68,7 +68,8 @@ class AdminSection(RegistryMixin, LabeledURLs):
 
     def get_view_kwargs(self):
         return {
-            'site': self.site
+            'site': self.site,
+            'section': self,
         }
 
     def get_view_name_kwargs(self):

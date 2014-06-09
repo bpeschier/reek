@@ -45,6 +45,12 @@ class IndexView(AdminContextMixin, TemplateView):
 
 class SectionIndexView(AdminContextMixin, TemplateView):
     template_name = 'admin/section_index.html'
+    section = None
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['section'] = self.section
+        return context
 
 
 class ListView(AdminContextMixin, list_views.ListView):
