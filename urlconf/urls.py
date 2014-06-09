@@ -1,7 +1,7 @@
 from collections import OrderedDict
 import copy
 
-from django.conf.urls import patterns, url as conf_url
+from django.conf.urls import url as conf_url
 
 from .urlresolvers import PageResolver
 
@@ -118,7 +118,7 @@ class BaseURLs:
             return url.view
 
     def as_urls(self):
-        return patterns('', *[url.as_url() for url in self.urls.values()])
+        return [url.as_url() for url in self.urls.values()]
 
 
 class URLs(BaseURLs, metaclass=URLsMeta):

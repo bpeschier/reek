@@ -1,35 +1,44 @@
 from functools import reduce
+
 from django.apps.registry import apps
 
-from django.conf.urls import url as conf_url, include, patterns
-
+from django.conf.urls import url as conf_url, include
 from django.core.exceptions import ImproperlyConfigured
 
-from django.utils.translation import ugettext_lazy as _
-
 from urlconf import urls
-
 from . import views
+from .registry import RegistryMixin
 
-from .sites import AlreadyRegistered, NotRegistered
 
-
-class Admin(urls.URLs):
+class LabeledURLs(urls.URLs):
     label = None
+    verbose_name = None
 
-    def __init__(self, section=None):
-        self.section = section
+    def __init__(self):
+        self.label = self.get_label()
+        self.verbose_name = self.get_verbose_name()
         super().__init__()
 
     def get_label(self):
         return self.label
 
-    def as_urls(self):
+    def get_verbose_name(self):
+        return self.verbose_name
+
+    def as_urls(self, extra_urls=None):
+        extra_urls = [] if extra_urls is None else extra_urls
         # Prefix the urls with the label
-        return patterns('', conf_url(r'^{label}/'.format(label=self.get_label()), include(super().as_urls())))
+        return [conf_url(
+            r'^{label}/'.format(label=self.label),
+            include(super().as_urls() + extra_urls)
+        )]
 
 
-class AdminSection(Admin):
+#
+# Sections
+#
+
+class AdminSection(RegistryMixin, LabeledURLs):
     index = urls.URL(r'^$', views.SectionIndexView, name='{section}_index')
 
     def __init__(self, site=None):
@@ -38,12 +47,7 @@ class AdminSection(Admin):
         super().__init__()
 
     def register(self, admin_class):
-        if admin_class.label in self._registry:
-            raise AlreadyRegistered(
-                _('Admin %s is already registered') % admin_class.label,
-            )
-        else:
-            self._registry[admin_class.label] = self.init_admin(admin_class)
+        super().register(self.init_admin(admin_class))
 
     def update_url(self, name, url):
         url.update_instance(
@@ -52,26 +56,24 @@ class AdminSection(Admin):
             namespace=self.site.namespace
         )
 
-    @property
-    def admins(self):
-        return list(self._registry.values())
-
     def init_admin(self, admin_class):
         return admin_class(section=self)
 
-    def get(self, label):
-        if label not in self._registry:
-            raise NotRegistered(_('Admin %s is not registered') % label)
-        return self._registry[label]
-
     @property
-    def admin_urls(self):
+    def admins(self):
+        return self.values()
+
+    def admins_as_urls(self):
         return reduce(lambda a, b: a + b, [admin.as_urls() for admin in self.admins])
 
     def get_view_name_kwargs(self):
         return {
             'section': self.get_label()
         }
+
+    def as_urls(self, extra_urls=None):
+        extra_urls = [] if extra_urls is None else extra_urls
+        return super().as_urls(extra_urls=self.admins_as_urls() + extra_urls)
 
 
 class AppAdminSection(AdminSection):
@@ -83,6 +85,19 @@ class AppAdminSection(AdminSection):
 
     def get_label(self):
         return self.label or self.app.label
+
+    def get_verbose_name(self):
+        return self.verbose_name or self.app.verbose_name
+
+
+#
+# Admin within a Section
+#
+
+class Admin(LabeledURLs):
+    def __init__(self, section=None):
+        self.section = section
+        super().__init__()
 
 
 class ModelAdmin(Admin):
@@ -111,19 +126,19 @@ class ModelAdmin(Admin):
     def get_label(self):
         return self.label or self.get_model_name()
 
+    def get_verbose_name(self):
+        return self.verbose_name or self.model._meta.verbose_name_plural
+
     #
     # Helpers
     #
-
-    def get_app_label(self):
-        return self.model._meta.app_label
 
     def get_model_name(self):
         return self.model._meta.model_name
 
     def get_view_name_kwargs(self):
         return {
-            'app': self.get_app_label(),
+            'app': self.section.label,
             'model': self.get_model_name(),
         }
 

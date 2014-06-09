@@ -1,21 +1,12 @@
 from functools import reduce
 
-from django.conf.urls import patterns, url, include
-
-from django.utils.translation import ugettext_lazy as _
+from django.conf.urls import url, include
 
 from .views import IndexView
+from .registry import RegistryMixin
 
 
-class AlreadyRegistered(Exception):
-    pass
-
-
-class NotRegistered(Exception):
-    pass
-
-
-class AdminSite:
+class AdminSite(RegistryMixin):
     template_admin_base = 'admin/base.html'
     namespace = 'admin'
 
@@ -23,39 +14,21 @@ class AdminSite:
 
     index_view = IndexView
 
-    def __init__(self):
-        self._registry = {}
-
     def register(self, section):
-        if section.label in self._registry:
-            raise AlreadyRegistered(
-                _('Section %s is already registered') % section.label,
-            )
-        else:
-            self._registry[section.label] = section
-            section.site = self  # Ensure we did this
-
-    def get(self, label):
-        if label not in self._registry:
-            raise NotRegistered(_('Section %s is not registered') % label)
-        return self._registry[label]
+        super().register(section)
+        section.site = self  # Ensure we did this
 
     @property
     def sections(self):
-        return list(self._registry.values())
+        return self.values()
 
     @property
     def section_urls(self):
         return reduce(lambda a, b: a + b, [section.as_urls() for section in self.sections])
 
-    @property
-    def urls(self):
+    def as_include(self):
         return include(
-            patterns(
-                '',
-                url(r'^$', self.index_view.as_view(site=self), name='index'),
-                self.section_urls
-            ),
+            [url(r'^$', self.index_view.as_view(site=self), name='index')] + self.section_urls,
             app_name='admin',
             namespace=self.namespace
         )

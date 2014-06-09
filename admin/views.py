@@ -2,7 +2,6 @@ from django.views.generic.base import TemplateView, ContextMixin, TemplateRespon
 from django.views.generic import detail as detail_views
 from django.views.generic import edit as edit_views
 from django.views.generic import list as list_views
-from django.forms import models as model_forms
 
 
 class AdminContextMixin(TemplateResponseMixin, ContextMixin):
