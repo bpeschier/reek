@@ -2,6 +2,9 @@
 
 {% block content %}
   <h2>{{ admin.verbose_name }}</h2>
+  <p>
+  <a href="{% url admin.urls.create.reverse_name %}">Voeg toe</a>
+  </p>
   <table>
     <thead>
     <tr>
@@ -15,6 +18,9 @@
           <a href="{% url admin.urls.update.reverse_name pk=object.pk %}">
             {{ object }}
           </a>
+        </td>
+        <td>
+          <a href="{% url admin.urls.delete.reverse_name pk=object.pk %}">Verwijder</a>
         </td>
       </tr>
     {% endfor %}

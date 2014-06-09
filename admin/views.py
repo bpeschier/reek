@@ -1,3 +1,4 @@
+from django.core.urlresolvers import reverse
 from django.views.generic.base import TemplateView, ContextMixin, TemplateResponseMixin
 from django.views.generic import detail as detail_views
 from django.views.generic import edit as edit_views
@@ -20,6 +21,9 @@ class AdminContextMixin(SiteContextMixin):
         context = super().get_context_data(**kwargs)
         context['admin'] = self.admin
         return context
+
+    def get_success_url(self):
+        return reverse(self.admin.urls['index'].reverse_name)
 
     def get_template_names(self):
         info = dict(
