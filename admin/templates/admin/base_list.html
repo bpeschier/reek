@@ -1,9 +1,7 @@
 {% extends site.template_admin_base %}
 
-
 {% block content %}
-  <h1>{{ section.verbose_name }}</h1>
-
+  <h2>{{ admin.verbose_name }}</h2>
   <table>
     <thead>
     <tr>
@@ -11,10 +9,12 @@
     </tr>
     </thead>
     <tbody>
-    {% for admin in section.admins %}
+    {% for object in object_list %}
       <tr>
         <td>
-          <a href="{% url admin.urls.index.reverse_name %}">{{ admin.verbose_name }}</a>
+          <a href="{% url admin.urls.update.reverse_name pk=object.pk %}">
+            {{ object }}
+          </a>
         </td>
       </tr>
     {% endfor %}

@@ -4,7 +4,7 @@ from django.views.generic import edit as edit_views
 from django.views.generic import list as list_views
 
 
-class AdminContextMixin(TemplateResponseMixin, ContextMixin):
+class SiteContextMixin(ContextMixin):
     site = None
 
     def get_context_data(self, **kwargs):
@@ -12,19 +12,24 @@ class AdminContextMixin(TemplateResponseMixin, ContextMixin):
         context['site'] = self.site
         return context
 
+
+class AdminContextMixin(SiteContextMixin):
+    admin = None
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['admin'] = self.admin
+        return context
+
     def get_template_names(self):
-        names = super().get_template_names()
-        if hasattr(self, 'model'):
-            info = dict(
-                app=self.model._meta.app_label,
-                model=self.model._meta.model_name,
-                suffix=self.template_name_suffix
-            )
-            # Overwrite with our specific model template first,
-            # and add a generic template as a fallback
-            return ['admin/{app}/{model}{suffix}.html'.format(**info), 'admin/base{suffix}.html'.format(**info)]
-        else:
-            return names
+        info = dict(
+            app=self.model._meta.app_label,
+            model=self.model._meta.model_name,
+            suffix=self.template_name_suffix
+        )
+        # Overwrite with our specific model template first,
+        # and add a generic template as a fallback
+        return ['admin/{app}/{model}{suffix}.html'.format(**info), 'admin/base{suffix}.html'.format(**info)]
 
 
 class LoginView:
@@ -39,11 +44,11 @@ class ResetPasswordView:
     pass
 
 
-class IndexView(AdminContextMixin, TemplateView):
+class IndexView(SiteContextMixin, TemplateView):
     template_name = 'admin/index.html'
 
 
-class SectionIndexView(AdminContextMixin, TemplateView):
+class SectionIndexView(SiteContextMixin, TemplateView):
     template_name = 'admin/section_index.html'
     section = None
 
@@ -69,5 +74,5 @@ class UpdateView(AdminContextMixin, edit_views.UpdateView):
     pass
 
 
-class DeleteView(edit_views.DeleteView):
+class DeleteView(AdminContextMixin, edit_views.DeleteView):
     pass

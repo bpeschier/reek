@@ -155,6 +155,8 @@ class ModelAdmin(Admin):
     def get_view_kwargs(self):
         return {
             'model': self.model,
+            'site': self.site,
+            'admin': self,
         }
 
     def get_form_view_kwargs(self):
