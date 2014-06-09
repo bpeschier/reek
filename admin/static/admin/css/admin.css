@@ -2,10 +2,8 @@ body {
   margin: 0;
   font-family: "Helvetica Neue", "Arial", sans-serif;
   display: flex;
-  flex-direction: column; }
-
-h1, h2, h3, h4 {
-  margin: 0; }
+  flex-direction: column;
+  -webkit-font-smoothing: antialiased; }
 
 .main-header {
   background-color: black;
@@ -14,8 +12,13 @@ h1, h2, h3, h4 {
 
 .main-navigation > h1 {
   font-weight: normal;
-  font-size: 26px;
+  font-size: 24px;
   margin: 0; }
+  .main-navigation > h1 > a {
+    color: white;
+    text-decoration: none; }
+    .main-navigation > h1 > a:hover {
+      text-decoration: underline; }
 
 .main {
   position: relative;
@@ -23,8 +26,34 @@ h1, h2, h3, h4 {
   flex-grow: 1; }
 
 .main-sidebar {
-  padding: 20px;
-  background-color: #eeeeee; }
+  background-color: #eeeeee;
+  padding: 20px 0; }
 
 .main-content {
-  padding: 20px; }
+  padding: 20px 30px; }
+  .main-content > h2 {
+    margin: 0; }
+
+.admin-section > h2 {
+  font-size: 14px;
+  margin: 0;
+  background-color: rgba(0, 0, 0, 0.1); }
+  .admin-section > h2 > a {
+    display: block;
+    padding: 5px 20px;
+    text-transform: uppercase;
+    text-decoration: none;
+    color: #000; }
+    .admin-section > h2 > a:hover {
+      background-color: rgba(0, 0, 0, 0.2); }
+.admin-section > ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 0; }
+  .admin-section > ul > li > a {
+    display: block;
+    padding: 10px 20px;
+    text-decoration: none;
+    color: #000; }
+    .admin-section > ul > li > a:hover {
+      background-color: rgba(0, 0, 0, 0.2); }

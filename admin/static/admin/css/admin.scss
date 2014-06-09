@@ -5,10 +5,8 @@ body {
 
   display: flex;
   flex-direction: column;
-}
 
-h1, h2, h3, h4 {
-  margin: 0;
+  -webkit-font-smoothing: antialiased;
 }
 
 .main-header {
@@ -16,14 +14,20 @@ h1, h2, h3, h4 {
   color: white;
 
   padding: 10px 20px;
-
 }
 
 .main-navigation {
   > h1 {
     font-weight: normal;
-    font-size: 26px;
+    font-size: 24px;
     margin: 0;
+    > a {
+      color: white;
+      text-decoration: none;
+      &:hover {
+        text-decoration: underline;
+      }
+    }
   }
 }
 
@@ -35,10 +39,49 @@ h1, h2, h3, h4 {
 }
 
 .main-sidebar {
-  padding: 20px;
   background-color: #eeeeee;
+  padding: 20px 0;
 }
 
 .main-content {
-  padding: 20px;
+  padding: 20px 30px;
+
+  > h2 {
+    margin: 0;
+  }
+}
+
+.admin-section {
+  > h2 {
+    font-size: 14px;
+    margin: 0;
+    background-color: rgba(#000, 0.1);
+    > a {
+      display: block;
+      padding: 5px 20px;
+      text-transform: uppercase;
+      text-decoration: none;
+      color: #000;
+
+      &:hover {
+        background-color: rgba(#000, 0.2);
+      }
+    }
+  }
+  > ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+    > li {
+      > a {
+        display: block;
+        padding: 10px 20px;
+        text-decoration: none;
+        color: #000;
+        &:hover {
+          background-color: rgba(#000, 0.2);
+        }
+      }
+    }
+  }
 }

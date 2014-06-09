@@ -33,7 +33,7 @@
       {% block sidebar %}
         <nav>
           {% for section in site.sections %}
-            <section>
+            <section class="admin-section">
               <h2><a href="{% url section.urls.index.reverse_name %}">{{ section.verbose_name }}</a></h2>
               <ul>
                 {% for admin in section.admins %}
