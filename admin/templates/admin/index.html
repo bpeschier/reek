@@ -1,1 +1,19 @@
 {% extends site.template_admin_base %}
+
+{% block sidebar %}
+  <nav>
+    {% for section in site.sections %}
+      <section>
+        <h2><a href="{% url section.urls.index.reverse_name %}">{{ section.verbose_name }}</a></h2>
+        <ul>
+          {% for admin in section.admins %}
+            {% with url_name=admin.urls.index.reverse_name %}
+              <li><a href="{% url url_name %}">{{ admin.verbose_name }}</a></li>
+            {% endwith %}
+          {% endfor %}
+        </ul>
+      </section>
+
+    {% endfor %}
+  </nav>
+{% endblock %}

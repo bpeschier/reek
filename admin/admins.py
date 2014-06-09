@@ -42,7 +42,7 @@ class AdminSection(RegistryMixin, LabeledURLs):
     index = urls.URL(r'^$', views.SectionIndexView, name='{section}_index')
 
     def __init__(self, site=None):
-        self._registry = {}
+        self.site = site
         site.register(self)
         super().__init__()
 
@@ -66,9 +66,14 @@ class AdminSection(RegistryMixin, LabeledURLs):
     def admins_as_urls(self):
         return reduce(lambda a, b: a + b, [admin.as_urls() for admin in self.admins])
 
+    def get_view_kwargs(self):
+        return {
+            'site': self.site
+        }
+
     def get_view_name_kwargs(self):
         return {
-            'section': self.get_label()
+            'section': self.label,
         }
 
     def as_urls(self, extra_urls=None):
@@ -98,6 +103,10 @@ class Admin(LabeledURLs):
     def __init__(self, section=None):
         self.section = section
         super().__init__()
+
+    @property
+    def site(self):
+        return self.section.site
 
 
 class ModelAdmin(Admin):
