@@ -1,0 +1,12 @@
+{% extends site.template_admin_base %}
+
+{% block content %}
+  <h2>{{ object }}</h2>
+  <form method="post" action="">
+    {% csrf_token %}
+    <table>
+      {{ form }}
+    </table>
+    <button type="submit">Opslaan</button>
+  </form>
+{% endblock %}

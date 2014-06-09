@@ -29,7 +29,7 @@ class AdminContextMixin(SiteContextMixin):
         )
         # Overwrite with our specific model template first,
         # and add a generic template as a fallback
-        return ['admin/{app}/{model}{suffix}.html'.format(**info), 'admin/base{suffix}.html'.format(**info)]
+        return ['admin/{app}/{model}{suffix}.html'.format(**info), 'admin/default/object{suffix}.html'.format(**info)]
 
 
 class LoginView:
