@@ -3,7 +3,7 @@ from functools import reduce
 from django.conf.urls import include
 from urlconf.urls import URLs, URL
 
-from .views import IndexView
+from .views import IndexView, LoginView
 from .registry import RegistryMixin
 
 
@@ -14,6 +14,7 @@ class AdminSite(RegistryMixin, URLs):
     name = 'Django administration'
 
     index = URL(r'^$', IndexView, name='index')
+    login = URL(r'^login/$', LoginView, name='login')
 
     def update_url(self, name, url):
         url.update_instance(

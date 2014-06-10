@@ -91,10 +91,12 @@ class AppAdminSection(AdminSection):
         super().__init__(**kwargs)
 
     def get_label(self):
-        return self.label if self.label is not None else self.app.label
+        label = super().get_label()
+        return label if label is not None else self.app.label
 
     def get_verbose_name(self):
-        return self.verbose_name if self.verbose_name is not None else self.app.verbose_name
+        verbose_name = super().get_verbose_name()
+        return verbose_name if verbose_name is not None else self.app.verbose_name
 
 
 #
@@ -135,10 +137,12 @@ class ModelAdmin(Admin):
         )
 
     def get_label(self):
-        return self.label if self.label is not None else self.get_model_name()
+        label = super().get_label()
+        return label if label is not None else self.get_model_name()
 
     def get_verbose_name(self):
-        return self.verbose_name if self.verbose_name is not None else self.model._meta.verbose_name_plural
+        verbose_name = super().get_verbose_name()
+        return verbose_name if verbose_name is not None else self.model._meta.verbose_name_plural
 
     #
     # Helpers

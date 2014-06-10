@@ -11,18 +11,14 @@
 </head>
 <body>
 <header class="main-header">
+  {% block header %}
+    <div class="main-navigation">
+      <h1><a href="{% url site.urls.index.reverse_name %}">{{ site.name }}</a></h1>
+      <nav class="navigation-home">
 
-  <div class="main-navigation">
-
-    <h1><a href="{% url site.urls.index.reverse_name %}">{{ site.name }}</a></h1>
-
-    <nav class="navigation-home">
-
-    </nav>
-
-
-  </div>
-
+      </nav>
+    </div>
+  {% endblock header %}
 </header>
 
 <main class="main">
