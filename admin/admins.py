@@ -7,6 +7,7 @@ from django.core.exceptions import ImproperlyConfigured
 
 from urlconf import urls
 from . import views
+
 from .registry import RegistryMixin
 
 
@@ -43,8 +44,8 @@ class AdminSection(RegistryMixin, LabeledURLs):
 
     def __init__(self, site=None):
         self.site = site
-        site.register(self)
         super().__init__()
+        site.register(self)
 
     def register(self, admin_class):
         super().register(self.init_admin(admin_class))
@@ -90,10 +91,10 @@ class AppAdminSection(AdminSection):
         super().__init__(**kwargs)
 
     def get_label(self):
-        return self.label or self.app.label
+        return self.label if self.label is not None else self.app.label
 
     def get_verbose_name(self):
-        return self.verbose_name or self.app.verbose_name
+        return self.verbose_name if self.verbose_name is not None else self.app.verbose_name
 
 
 #
@@ -134,10 +135,10 @@ class ModelAdmin(Admin):
         )
 
     def get_label(self):
-        return self.label or self.get_model_name()
+        return self.label if self.label is not None else self.get_model_name()
 
     def get_verbose_name(self):
-        return self.verbose_name or self.model._meta.verbose_name_plural
+        return self.verbose_name if self.verbose_name is not None else self.model._meta.verbose_name_plural
 
     #
     # Helpers

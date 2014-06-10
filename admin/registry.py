@@ -1,3 +1,5 @@
+from collections import OrderedDict
+
 from django.utils.translation import ugettext_lazy as _
 
 
@@ -16,7 +18,7 @@ class RegistryMixin:
 
     def __init__(self):
         super().__init__()
-        self._registry = {}
+        self._registry = OrderedDict()
 
     def register(self, obj):
         if obj.label in self._registry:
