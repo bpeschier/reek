@@ -1,11 +1,9 @@
 from django.conf import settings
-from django.contrib.admin.views.decorators import staff_member_required
-from django.contrib.auth import login
+from django.contrib.auth import login, REDIRECT_FIELD_NAME
 from django.contrib.auth.forms import AuthenticationForm
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.http.response import HttpResponseRedirect
 from django.shortcuts import resolve_url
-from django.utils.decorators import method_decorator
 from django.utils.http import is_safe_url
 from django.views.generic.base import TemplateView, ContextMixin
 from django.views.generic import detail as detail_views
@@ -46,9 +44,23 @@ class AdminContextMixin(SiteContextMixin):
 
 
 class StaffRequiredMixin:
-    @method_decorator(staff_member_required)
+    login_url = reverse_lazy('admin:login')
+    redirect_field = REDIRECT_FIELD_NAME
+
+    def get_login_url(self):
+        return self.login_url
+
+    def get_redirect_field(self):
+        return self.redirect_field
+
     def dispatch(self, request, *args, **kwargs):
-        return super().dispatch(request, *args, **kwargs)
+        if self.has_permission():
+            return super().dispatch(request, *args, **kwargs)
+        else:
+            return HttpResponseRedirect(self.get_login_url())
+
+    def has_permission(self):
+        return self.request.user.is_active and self.request.user.is_staff
 
 
 class BaseSiteMixin(StaffRequiredMixin, SiteContextMixin):
@@ -103,7 +115,8 @@ class ListView(BaseAdminMixin, list_views.ListView):
 
 
 class CreateView(BaseAdminMixin, edit_views.CreateView):
-    pass
+    def has_permission(self):
+        return super().has_permission() and self.admin.has_add_permission(self.request)
 
 
 class DetailView(BaseAdminMixin, detail_views.DetailView):
@@ -111,8 +124,10 @@ class DetailView(BaseAdminMixin, detail_views.DetailView):
 
 
 class UpdateView(BaseAdminMixin, edit_views.UpdateView):
-    pass
+    def has_permission(self):
+        return super().has_permission() and self.admin.has_change_permission(self.request)
 
 
 class DeleteView(BaseAdminMixin, edit_views.DeleteView):
-    pass
+    def has_permission(self):
+        return super().has_permission() and self.admin.has_delete_permission(self.request)

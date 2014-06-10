@@ -1,13 +1,12 @@
 from functools import reduce
 
 from django.apps.registry import apps
-
 from django.conf.urls import url as conf_url, include
+from django.contrib.auth import get_permission_codename
 from django.core.exceptions import ImproperlyConfigured
 
 from urlconf import urls
 from . import views
-
 from .registry import RegistryMixin
 
 
@@ -115,7 +114,7 @@ class Admin(LabeledURLs):
 
 class ModelAdmin(Admin):
     model = None
-    fields = '__all__'
+    fields = '__all__'  # The admin shows all fields by default... for now
 
     index = urls.URL(r'^$', views.ListView, name='{app}_{model}_index')
     create = urls.URL(r'^add/$', views.CreateView, name='{app}_{model}_create')
@@ -124,10 +123,17 @@ class ModelAdmin(Admin):
     delete = urls.URL(r'^(?P<pk>.+)/delete/$', views.DeleteView, name='{app}_{model}_delete')
 
     def __init__(self, model=None, **kwargs):
-        super().__init__(**kwargs)
+        # We need a model, either with the init or on the class
         self.model = self.model if model is None else model
         if self.model is None:
-            raise ImproperlyConfigured('Model class is not set on ModelAdmin')
+            raise ImproperlyConfigured('Model class is not set on ModelAdmin or in constructor')
+        self.opts = self.model._meta
+
+        super().__init__(**kwargs)
+
+    #
+    # URLs
+    #
 
     def update_url(self, name, url):
         url.update_instance(
@@ -136,32 +142,17 @@ class ModelAdmin(Admin):
             namespace=self.section.site.namespace
         )
 
-    def get_label(self):
-        label = super().get_label()
-        return label if label is not None else self.get_model_name()
-
-    def get_verbose_name(self):
-        verbose_name = super().get_verbose_name()
-        return verbose_name if verbose_name is not None else self.model._meta.verbose_name_plural
-
-    #
-    # Helpers
-    #
-
-    def get_model_name(self):
-        return self.model._meta.model_name
-
-    def get_view_name_kwargs(self):
-        return {
-            'app': self.section.label,
-            'model': self.get_model_name(),
-        }
-
     def get_view_kwargs(self):
         return {
             'model': self.model,
             'site': self.site,
             'admin': self,
+        }
+
+    def get_view_name_kwargs(self):
+        return {
+            'app': self.section.label,
+            'model': self.opts.model_name,
         }
 
     def get_form_view_kwargs(self):
@@ -174,3 +165,58 @@ class ModelAdmin(Admin):
 
     def get_create_view_kwargs(self):
         return self.get_form_view_kwargs()
+
+    #
+    # Labels and naming
+    #
+
+    def get_label(self):
+        label = super().get_label()
+        return label if label is not None else self.opts.model_name
+
+    def get_verbose_name(self):
+        verbose_name = super().get_verbose_name()
+        return verbose_name if verbose_name is not None else self.opts.verbose_name_plural
+
+    #
+    # Permissions
+    #
+
+    def has_add_permission(self, request):
+        """
+        Returns True if the given request has permission to add an object.
+        Can be overridden by the user in subclasses.
+        """
+        opts = self.opts
+        codename = get_permission_codename('add', opts)
+        return request.user.has_perm("%s.%s" % (opts.app_label, codename))
+
+    def has_change_permission(self, request, obj=None):
+        """
+        Returns True if the given request has permission to change the given
+        Django model instance, the default implementation doesn't examine the
+        `obj` parameter.
+
+        Can be overridden by the user in subclasses. In such case it should
+        return True if the given request has permission to change the `obj`
+        model instance. If `obj` is None, this should return True if the given
+        request has permission to change *any* object of the given type.
+        """
+        opts = self.opts
+        codename = get_permission_codename('change', opts)
+        return request.user.has_perm("%s.%s" % (opts.app_label, codename))
+
+    def has_delete_permission(self, request, obj=None):
+        """
+        Returns True if the given request has permission to change the given
+        Django model instance, the default implementation doesn't examine the
+        `obj` parameter.
+
+        Can be overridden by the user in subclasses. In such case it should
+        return True if the given request has permission to delete the `obj`
+        model instance. If `obj` is None, this should return True if the given
+        request has permission to delete *any* object of the given type.
+        """
+        opts = self.opts
+        codename = get_permission_codename('delete', opts)
+        return request.user.has_perm("%s.%s" % (opts.app_label, codename))
