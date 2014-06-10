@@ -34,8 +34,8 @@ class AdminContextMixin(SiteContextMixin):
 
     def get_template_names(self):
         info = dict(
-            app=self.model._meta.app_label,
-            model=self.model._meta.model_name,
+            app=self.admin.opts.app_label,
+            model=self.admin.opts.model_name,
             suffix=self.template_name_suffix
         )
         # Overwrite with our specific model template first,
@@ -88,14 +88,6 @@ class LoginView(SiteContextMixin, FormView):
         return HttpResponseRedirect(redirect_to)
 
 
-class ChangePasswordView:
-    pass
-
-
-class ResetPasswordView:
-    pass
-
-
 class IndexView(BaseSiteMixin, TemplateView):
     template_name = 'admin/index.html'
 
@@ -125,9 +117,11 @@ class DetailView(BaseAdminMixin, detail_views.DetailView):
 
 class UpdateView(BaseAdminMixin, edit_views.UpdateView):
     def has_permission(self):
-        return super().has_permission() and self.admin.has_change_permission(self.request)
+        # TODO: get_object gets called twice here (here and in get/post)
+        return super().has_permission() and self.admin.has_change_permission(self.request, obj=self.get_object())
 
 
 class DeleteView(BaseAdminMixin, edit_views.DeleteView):
     def has_permission(self):
-        return super().has_permission() and self.admin.has_delete_permission(self.request)
+        # TODO: get_object gets called twice here (here and in get/post)
+        return super().has_permission() and self.admin.has_delete_permission(self.request, obj=self.get_object())
