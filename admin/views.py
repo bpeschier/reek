@@ -5,11 +5,12 @@ from django.core.urlresolvers import reverse, reverse_lazy
 from django.http.response import HttpResponseRedirect
 from django.shortcuts import resolve_url
 from django.utils.http import is_safe_url
-from django.views.generic.base import TemplateView, ContextMixin
+from django.views.generic.base import TemplateView, ContextMixin, View
 from django.views.generic import detail as detail_views
 from django.views.generic import edit as edit_views
 from django.views.generic import list as list_views
-from django.views.generic.edit import FormView
+from django.views.generic.detail import SingleObjectTemplateResponseMixin, SingleObjectMixin
+from django.views.generic.edit import FormView, ModelFormMixin, ProcessFormView, DeletionMixin
 
 
 class SiteContextMixin(ContextMixin):
@@ -115,13 +116,29 @@ class DetailView(BaseAdminMixin, detail_views.DetailView):
     pass
 
 
-class UpdateView(BaseAdminMixin, edit_views.UpdateView):
+class UpdateView(BaseAdminMixin, SingleObjectTemplateResponseMixin, ModelFormMixin, ProcessFormView):
+    template_name_suffix = '_form'
+
+    def dispatch(self, request, *args, **kwargs):
+        # Set the object early, so we can check for it in `has_permission`.
+        self.object = self.get_object()
+        return super().dispatch(request, *args, **kwargs)
+
     def has_permission(self):
-        # TODO: get_object gets called twice here (here and in get/post)
-        return super().has_permission() and self.admin.has_change_permission(self.request, obj=self.get_object())
+        return super().has_permission() and self.admin.has_change_permission(self.request, obj=self.object)
 
 
-class DeleteView(BaseAdminMixin, edit_views.DeleteView):
+class DeleteView(BaseAdminMixin, SingleObjectTemplateResponseMixin, DeletionMixin, SingleObjectMixin, View):
+    template_name_suffix = '_confirm_delete'
+
+    def dispatch(self, request, *args, **kwargs):
+        # Set the object early, so we can check for it in `has_permission`.
+        self.object = self.get_object()
+        return super().dispatch(request, *args, **kwargs)
+
+    def get(self, request, *args, **kwargs):
+        context = self.get_context_data(object=self.object)
+        return self.render_to_response(context)
+
     def has_permission(self):
-        # TODO: get_object gets called twice here (here and in get/post)
-        return super().has_permission() and self.admin.has_delete_permission(self.request, obj=self.get_object())
+        return super().has_permission() and self.admin.has_delete_permission(self.request, obj=self.object)
