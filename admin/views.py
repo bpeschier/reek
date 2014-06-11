@@ -19,6 +19,10 @@ class SiteContextMixin(ContextMixin):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['site'] = self.site
+        context['sections'] = filter(
+            lambda s: s.has_permission(self.request),
+            self.site.sections,
+            )
         return context
 
 
@@ -100,6 +104,10 @@ class SectionIndexView(BaseSiteMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['section'] = self.section
+        context['admins'] = filter(
+            lambda a: any(a.get_permissions(self.request).values()),
+            self.section.admins
+        )
         return context
 
 

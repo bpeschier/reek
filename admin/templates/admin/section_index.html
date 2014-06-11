@@ -11,7 +11,7 @@
     </tr>
     </thead>
     <tbody>
-    {% for admin in section.admins %}
+    {% for admin in admins %}
       <tr>
         <td>
           <a href="{% url admin.urls.index.reverse_name %}">{{ admin.verbose_name }}</a>

@@ -59,6 +59,9 @@ class AdminSection(RegistryMixin, LabeledURLs):
     def init_admin(self, admin_class):
         return admin_class(section=self)
 
+    def has_permission(self, request):
+        return True
+
     @property
     def admins(self):
         return self.values()
@@ -97,6 +100,9 @@ class AppAdminSection(AdminSection):
         verbose_name = super().get_verbose_name()
         return verbose_name if verbose_name is not None else self.app.verbose_name
 
+    def has_permission(self, request):
+        return request.user.has_module_perms(self.app.label)
+
 
 #
 # Admin within a Section
@@ -110,6 +116,51 @@ class Admin(LabeledURLs):
     @property
     def site(self):
         return self.section.site
+
+    def has_add_permission(self, request):
+        """
+        Returns True if the given request has permission to add an object.
+        Can be overridden by the user in subclasses.
+        """
+        raise NotImplementedError
+
+    def has_change_permission(self, request, obj=None):
+        """
+        Returns True if the given request has permission to change the given
+        Django model instance, the default implementation doesn't examine the
+        `obj` parameter.
+
+        Can be overridden by the user in subclasses. In such case it should
+        return True if the given request has permission to change the `obj`
+        model instance. If `obj` is None, this should return True if the given
+        request has permission to change *any* object of the given type.
+        """
+        raise NotImplementedError
+
+    def has_delete_permission(self, request, obj=None):
+        """
+        Returns True if the given request has permission to change the given
+        Django model instance, the default implementation doesn't examine the
+        `obj` parameter.
+
+        Can be overridden by the user in subclasses. In such case it should
+        return True if the given request has permission to delete the `obj`
+        model instance. If `obj` is None, this should return True if the given
+        request has permission to delete *any* object of the given type.
+        """
+        raise NotImplementedError
+
+    def get_permissions(self, request):
+        """
+        Returns a dict of all perms for this model. This dict has the keys
+        ``add``, ``change``, and ``delete`` mapping to the True/False for each
+        of those actions.
+        """
+        return {
+            'add': self.has_add_permission(request),
+            'change': self.has_change_permission(request),
+            'delete': self.has_delete_permission(request)
+        }
 
 
 class ModelAdmin(Admin):
@@ -183,40 +234,16 @@ class ModelAdmin(Admin):
     #
 
     def has_add_permission(self, request):
-        """
-        Returns True if the given request has permission to add an object.
-        Can be overridden by the user in subclasses.
-        """
         opts = self.opts
         codename = get_permission_codename('add', opts)
         return request.user.has_perm("%s.%s" % (opts.app_label, codename))
 
     def has_change_permission(self, request, obj=None):
-        """
-        Returns True if the given request has permission to change the given
-        Django model instance, the default implementation doesn't examine the
-        `obj` parameter.
-
-        Can be overridden by the user in subclasses. In such case it should
-        return True if the given request has permission to change the `obj`
-        model instance. If `obj` is None, this should return True if the given
-        request has permission to change *any* object of the given type.
-        """
         opts = self.opts
         codename = get_permission_codename('change', opts)
         return request.user.has_perm("%s.%s" % (opts.app_label, codename))
 
     def has_delete_permission(self, request, obj=None):
-        """
-        Returns True if the given request has permission to change the given
-        Django model instance, the default implementation doesn't examine the
-        `obj` parameter.
-
-        Can be overridden by the user in subclasses. In such case it should
-        return True if the given request has permission to delete the `obj`
-        model instance. If `obj` is None, this should return True if the given
-        request has permission to delete *any* object of the given type.
-        """
         opts = self.opts
         codename = get_permission_codename('delete', opts)
         return request.user.has_perm("%s.%s" % (opts.app_label, codename))
