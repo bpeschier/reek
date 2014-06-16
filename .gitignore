@@ -1,5 +1,13 @@
+# sphinx build folder
+_build
+
+# PyCharm
 .idea
+
+# VirtualFish
 .venv
-*.log
+
 *.pot
 *.pyc
+
+*.log
