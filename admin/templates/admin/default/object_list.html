@@ -3,22 +3,31 @@
 {% block content %}
   <h2>{{ admin.verbose_name }}</h2>
   <p>
-  <a href="{% url admin.urls.create.reverse_name %}">Voeg toe</a>
+    <a href="{% url admin.urls.create.reverse_name %}">Voeg toe</a>
   </p>
-  <table>
+  <table class="admin-object-list">
     <thead>
     <tr>
-
+      {% for column in admin.list_display %}
+        <th>{{ column }}</th>
+      {% endfor %}
+      <th>Verwijder?</th>
     </tr>
     </thead>
     <tbody>
     {% for object in object_list %}
       <tr>
-        <td>
-          <a href="{% url admin.urls.update.reverse_name pk=object.pk %}">
-            {{ object }}
-          </a>
-        </td>
+        {% for column in admin.list_display %}
+          <td>
+            {% if forloop.first %}
+              <a href="{% url admin.urls.update.reverse_name pk=object.pk %}">
+                {{ object }}
+              </a>
+            {% else %}
+              {{ object }}
+            {% endif %}
+          </td>
+        {% endfor %}
         <td>
           <a href="{% url admin.urls.delete.reverse_name pk=object.pk %}">Verwijder</a>
         </td>

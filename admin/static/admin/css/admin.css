@@ -1,6 +1,7 @@
 body {
   margin: 0;
   font-family: "Helvetica Neue", "Arial", sans-serif;
+  font-size: 18px;
   display: flex;
   flex-direction: column;
   -webkit-font-smoothing: antialiased; }
@@ -10,34 +11,48 @@ body {
   color: white;
   padding: 10px 20px; }
 
-.main-navigation > h1 {
-  font-weight: normal;
-  font-size: 24px;
+.main-navigation {
+  display: flex; }
+  .main-navigation > h1 {
+    font-weight: normal;
+    font-size: 24px;
+    margin: 0;
+    flex: 1; }
+    .main-navigation > h1 > a {
+      color: white;
+      text-decoration: none; }
+      .main-navigation > h1 > a:hover {
+        text-decoration: underline; }
+
+.navigation-home > ul {
+  list-style-type: none;
   margin: 0; }
-  .main-navigation > h1 > a {
-    color: white;
-    text-decoration: none; }
-    .main-navigation > h1 > a:hover {
-      text-decoration: underline; }
 
 .main {
   position: relative;
   display: flex;
-  flex-grow: 1; }
+  flex-grow: 1;
+  justify-content: center; }
+  .main > form {
+    align-self: center;
+    background-color: #eee;
+    border: 1px solid #ccc;
+    padding: 20px 20px 30px 20px;
+    margin-bottom: 60px; }
 
 .main-sidebar {
   background-color: #eeeeee;
   padding: 20px 0; }
 
 .main-content {
-  padding: 20px 30px; }
+  padding: 20px 30px;
+  flex: 1; }
   .main-content > h2 {
     margin: 0; }
 
 .admin-section > h2 {
   font-size: 14px;
-  margin: 0;
-  background-color: rgba(0, 0, 0, 0.1); }
+  margin: 0; }
   .admin-section > h2 > a {
     display: block;
     padding: 5px 20px;
@@ -45,7 +60,7 @@ body {
     text-decoration: none;
     color: #000; }
     .admin-section > h2 > a:hover {
-      background-color: rgba(0, 0, 0, 0.2); }
+      background-color: rgba(0, 0, 0, 0.1); }
 .admin-section > ul {
   list-style-type: none;
   padding: 0;
@@ -57,3 +72,44 @@ body {
     color: #000; }
     .admin-section > ul > li > a:hover {
       background-color: rgba(0, 0, 0, 0.2); }
+
+button, select, input[type="text"], input[type="password"], textarea {
+  border-radius: 0;
+  padding: 8px 10px;
+  background-image: none;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  font-size: 18px;
+  margin-bottom: 1px; }
+  button:focus, select:focus, input[type="text"]:focus, input[type="password"]:focus, textarea:focus {
+    background-color: #fafafa;
+    border-bottom-color: #000;
+    border-bottom-width: 2px;
+    margin-bottom: 0;
+    outline: 0; }
+
+select {
+  -webkit-appearance: textfield; }
+
+button {
+  background-color: #eee;
+  color: #333;
+  text-transform: uppercase;
+  font-size: 14px; }
+  button:focus {
+    background-color: #ccc; }
+
+.admin-object-list {
+  width: 100%;
+  border-collapse: collapse; }
+  .admin-object-list > tbody > tr > td {
+    padding: 16px; }
+  .admin-object-list > tbody > tr:nth-child(2n) {
+    background-color: #eee; }
+
+.form-controls > p > label {
+  display: block;
+  font-size: 16px;
+  margin-bottom: 8px;
+  font-weight: bold;
+  color: #666; }

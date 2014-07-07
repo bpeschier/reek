@@ -109,6 +109,8 @@ class AppAdminSection(AdminSection):
 #
 
 class Admin(LabeledURLs):
+    list_display = ['__str__']
+
     def __init__(self, section=None):
         self.section = section
         super().__init__()

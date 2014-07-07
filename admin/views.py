@@ -1,11 +1,11 @@
 from django.conf import settings
-from django.contrib.auth import login, REDIRECT_FIELD_NAME
+from django.contrib.auth import login, REDIRECT_FIELD_NAME, logout
 from django.contrib.auth.forms import AuthenticationForm
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.http.response import HttpResponseRedirect
 from django.shortcuts import resolve_url
 from django.utils.http import is_safe_url
-from django.views.generic.base import TemplateView, ContextMixin, View
+from django.views.generic.base import TemplateView, ContextMixin, View, RedirectView
 from django.views.generic import detail as detail_views
 from django.views.generic import edit as edit_views
 from django.views.generic import list as list_views
@@ -22,7 +22,7 @@ class SiteContextMixin(ContextMixin):
         context['sections'] = filter(
             lambda s: s.has_permission(self.request),
             self.site.sections,
-            )
+        )
         return context
 
 
@@ -91,6 +91,15 @@ class LoginView(SiteContextMixin, FormView):
         login(self.request, form.get_user())
 
         return HttpResponseRedirect(redirect_to)
+
+
+class LogoutView(SiteContextMixin, RedirectView):
+    permanent = False
+    pattern_name = 'admin:login'
+
+    def get(self, *args, **kwargs):
+        logout(self.request)
+        return super().get(*args, **kwargs)
 
 
 class IndexView(BaseSiteMixin, TemplateView):

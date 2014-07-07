@@ -2,11 +2,9 @@
 
 {% block content %}
   <h2>{{ object }}</h2>
-  <form method="post" action="">
+  <form method="post" action="" class="form-controls">
     {% csrf_token %}
-    <table>
-      {{ form }}
-    </table>
+    {{ form.as_p }}
     <button type="submit">Opslaan</button>
   </form>
 {% endblock %}

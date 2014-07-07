@@ -15,13 +15,17 @@
     <div class="main-navigation">
       <h1><a href="{% url site.urls.index.reverse_name %}">{{ site.name }}</a></h1>
       <nav class="navigation-home">
-
+        <ul>
+          {% if user.is_authenticated %}
+            <li><a href="{% url site.urls.logout.reverse_name %}">Log uit</a></li>
+          {% endif %}
+        </ul>
       </nav>
     </div>
   {% endblock header %}
 </header>
 
-<main class="main">
+<main class=" main">
   {% block main %}
 
     <aside class="main-sidebar">

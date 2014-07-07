@@ -1,11 +1,9 @@
 {% extends site.template_admin_base %}
 
 {% block main %}
-  <form action="" method="post">
+  <form action="" method="post" class="form-controls">
     {% csrf_token %}
-    <table>
-      {{ form }}
-    </table>
+    {{ form.as_p }}
     <button type="submit">Log in</button>
   </form>
 {% endblock %}
