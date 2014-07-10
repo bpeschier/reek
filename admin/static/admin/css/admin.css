@@ -74,19 +74,20 @@ body {
       background-color: rgba(0, 0, 0, 0.2); }
 
 button, select, input[type="text"], input[type="password"], textarea {
+  display: block;
   border-radius: 0;
   padding: 8px 10px;
   background-image: none;
   background-color: #fff;
   border: 1px solid #ccc;
-  font-size: 18px;
-  margin-bottom: 1px; }
+  font-size: 18px; }
   button:focus, select:focus, input[type="text"]:focus, input[type="password"]:focus, textarea:focus {
     background-color: #fafafa;
     border-bottom-color: #000;
-    border-bottom-width: 2px;
-    margin-bottom: 0;
     outline: 0; }
+
+input[type="text"], input[type="password"], textarea {
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1); }
 
 select {
   -webkit-appearance: textfield; }
@@ -108,7 +109,7 @@ button {
     background-color: #eee; }
 
 .form-controls > p > label {
-  display: block;
+  display: inline-block;
   font-size: 16px;
   margin-bottom: 8px;
   font-weight: bold;
