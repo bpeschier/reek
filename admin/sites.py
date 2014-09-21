@@ -1,8 +1,6 @@
 from functools import reduce
 
-from django.conf.urls import include
 from urlconf.urls import URLs, URL
-
 from .views import IndexView, LoginView, LogoutView
 from .registry import RegistryMixin
 
@@ -10,6 +8,7 @@ from .registry import RegistryMixin
 class AdminSite(RegistryMixin, URLs):
     template_admin_base = 'admin/base.html'
     namespace = 'admin'
+    app_name = 'admin'
 
     name = 'Django administration'
 
@@ -17,14 +16,7 @@ class AdminSite(RegistryMixin, URLs):
     login = URL(r'^login/$', LoginView, name='login')
     logout = URL(r'^logout/$', LogoutView, name='logout')
 
-    def update_url(self, name, url):
-        url.update_instance(
-            self.get_view_name(name, url),
-            self.get_view(name, url),
-            namespace=self.namespace
-        )
-
-    def get_view_kwargs(self):
+    def get_view_kwargs(self, name):
         return {
             'site': self,
         }
@@ -43,10 +35,3 @@ class AdminSite(RegistryMixin, URLs):
 
     def as_urls(self):
         return super().as_urls() + self.section_urls
-
-    def as_include(self):
-        return include(
-            self.as_urls(),
-            app_name='admin',
-            namespace=self.namespace
-        )

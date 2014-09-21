@@ -46,15 +46,11 @@ class AdminSection(RegistryMixin, LabeledURLs):
         super().__init__()
         site.register(self)
 
+    def get_namespace(self):
+        return self.site.namespace
+
     def register(self, admin_class):
         super().register(self.init_admin(admin_class))
-
-    def update_url(self, name, url):
-        url.update_instance(
-            self.get_view_name(name, url),
-            self.get_view(name, url),
-            namespace=self.site.namespace
-        )
 
     def init_admin(self, admin_class):
         return admin_class(section=self)
@@ -69,13 +65,13 @@ class AdminSection(RegistryMixin, LabeledURLs):
     def admins_as_urls(self):
         return reduce(lambda a, b: a + b, [admin.as_urls() for admin in self.admins])
 
-    def get_view_kwargs(self):
+    def get_view_kwargs(self, name):
         return {
             'site': self.site,
             'section': self,
         }
 
-    def get_view_name_kwargs(self):
+    def get_view_name_fields(self, name):
         return {
             'section': self.label,
         }
@@ -188,36 +184,26 @@ class ModelAdmin(Admin):
     # URLs
     #
 
-    def update_url(self, name, url):
-        url.update_instance(
-            self.get_view_name(name, url),
-            self.get_view(name, url),
-            namespace=self.section.site.namespace
-        )
+    def get_namespace(self):
+        return self.section.site.namespace
 
-    def get_view_kwargs(self):
-        return {
+    def get_view_kwargs(self, name):
+        base_kwargs = {
             'model': self.model,
             'site': self.site,
             'admin': self,
         }
+        if name in ['update', 'create']:
+            base_kwargs.update({
+                'fields': self.fields,
+            })
+        return base_kwargs
 
-    def get_view_name_kwargs(self):
+    def get_view_name_fields(self, name):
         return {
             'app': self.section.label,
             'model': self.opts.model_name,
         }
-
-    def get_form_view_kwargs(self):
-        kwargs = self.get_view_kwargs()
-        kwargs['fields'] = self.fields
-        return kwargs
-
-    def get_update_view_kwargs(self):
-        return self.get_form_view_kwargs()
-
-    def get_create_view_kwargs(self):
-        return self.get_form_view_kwargs()
 
     #
     # Labels and naming

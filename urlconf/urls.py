@@ -1,7 +1,8 @@
 from collections import OrderedDict
 import copy
 
-from django.conf.urls import url as conf_url
+from django.conf.urls import url as conf_url, include as conf_include
+from django.views.generic.base import View
 
 from .urlresolvers import PageResolver
 
@@ -14,30 +15,45 @@ class URL:
     # Tracks each time a URL instance is created. Used to retain order.
     creation_counter = 0
 
-    def __init__(self, pattern, view, name=None, namespace=None):
+    def __init__(self, pattern, view, attribute_name=None, name=None, namespace=None):
         self.pattern = pattern
+        self.attribute_name = attribute_name
         self.name = name
         self.view = view
         self.namespace = namespace
+        self.urls = None
 
         self.creation_counter = URL.creation_counter
         URL.creation_counter += 1
 
     def as_url(self):
-        return conf_url(self.pattern, self.view, name=self.name)
+        return conf_url(
+            self.pattern,
+            self.get_view_function(**self.urls.get_view_kwargs(self.attribute_name)),
+            name=self.get_view_name()
+        )
+
+    def get_view_function(self, **kwargs):
+        if isinstance(self.view, type) and issubclass(self.view, View):  # CBV
+            return self.view.as_view(**kwargs)
+        else:  # Function
+            return self.view
+
+    def get_view_name(self):
+        return self.name.format(
+            **self.urls.get_view_name_fields(self.attribute_name)) if self.name else self.attribute_name
+
+    def get_namespace(self):
+        urls_namespace = self.urls.get_namespace()
+        return urls_namespace if urls_namespace else self.namespace
 
     @property
     def reverse_name(self):
-        if self.namespace is None:
+        namespace = self.get_namespace()
+        if namespace is None:
             return self.name
         else:
-            return '{ns}:{name}'.format(ns=self.namespace, name=self.name)
-
-    def update_instance(self, name, view, namespace=None):
-        self.name = name
-        self.view = view
-        if namespace is not None:
-            self.namespace = namespace
+            return '{ns}:{name}'.format(ns=namespace, name=self.get_view_name())
 
 
 class URLsMeta(type):
@@ -46,6 +62,7 @@ class URLsMeta(type):
         current_urls = []
         for key, value in list(attrs.items()):
             if isinstance(value, URL):
+                value.attribute_name = key  # Set the base name to the attribute name
                 current_urls.append((key, value))
                 attrs.pop(key)
         current_urls.sort(key=lambda x: x[1].creation_counter)
@@ -81,44 +98,41 @@ class BaseURLs:
 
     declared_urls = OrderedDict()
     base_urls = OrderedDict()
+    namespace = None
+    app_name = None
 
-    def __init__(self):
+    def __init__(self, namespace=None, app_name=None):
+        if namespace:
+            self.namespace = namespace
+        if app_name:
+            self.app_name = app_name
+
         # base_urls is the *class*-wide definition of urls
         self.urls = copy.deepcopy(self.base_urls)
+        for url in self.urls.values():
+            url.urls = self
 
-        self.update_urls()
-
-    def update_urls(self):
-        # Update based on this URLs
-        for name, url in self.urls.items():
-            self.update_url(name, url)
-
-    def update_url(self, name, url):
-        url.update_instance(
-            self.get_view_name(name, url),
-            self.get_view(name, url),
-        )
-
-    def get_view_name_kwargs(self):
+    def get_view_name_fields(self, name):
         return {}
 
-    def get_view_kwargs(self):
+    def get_view_kwargs(self, name):
         return {}
 
-    def get_view_name(self, attr_name, url):
-        name_kwargs = getattr(self, 'get_{}_name_kwargs'.format(attr_name), self.get_view_name_kwargs)()
-        name = attr_name if url.name is None else url.name  # Use the overridden name if set
-        return name.format(**name_kwargs)
+    def get_namespace(self):
+        return self.namespace
 
-    def get_view(self, attr_name, url):
-        if isinstance(url.view, type):
-            view_kwargs = getattr(self, 'get_{}_view_kwargs'.format(attr_name), self.get_view_kwargs)()
-            return url.view.as_view(**view_kwargs)
-        else:
-            return url.view
+    def get_app_name(self):
+        return self.app_name
 
     def as_urls(self):
         return [url.as_url() for url in self.urls.values()]
+
+    def as_include(self):
+        return conf_include(
+            self.as_urls(),
+            app_name=self.get_app_name(),
+            namespace=self.get_namespace()
+        )
 
 
 class URLs(BaseURLs, metaclass=URLsMeta):
@@ -166,5 +180,3 @@ def include_pages(page_model, app_name=None, namespace=None):
     ]
     """
     return URLConfWrapper(page_urls(page_model, app_name, namespace)), app_name, namespace
-
-
