@@ -1,6 +1,6 @@
 from functools import reduce
 
-from urlconf.urls import URLs, URL
+from declarative_urlconf import URLs, URL
 from .views import IndexView, LoginView, LogoutView
 from .registry import RegistryMixin
 

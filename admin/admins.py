@@ -5,12 +5,12 @@ from django.conf.urls import url as conf_url, include
 from django.contrib.auth import get_permission_codename
 from django.core.exceptions import ImproperlyConfigured
 
-from urlconf import urls
+import declarative_urlconf as urlconf
 from . import views
 from .registry import RegistryMixin
 
 
-class LabeledURLs(urls.URLs):
+class LabeledURLs(urlconf.URLs):
     label = None
     verbose_name = None
 
@@ -39,7 +39,7 @@ class LabeledURLs(urls.URLs):
 #
 
 class AdminSection(RegistryMixin, LabeledURLs):
-    index = urls.URL(r'^$', views.SectionIndexView, name='{section}_index')
+    index = urlconf.URL(r'^$', views.SectionIndexView, name='{section}_index')
 
     def __init__(self, site=None):
         self.site = site
@@ -165,11 +165,11 @@ class ModelAdmin(Admin):
     model = None
     fields = '__all__'  # The admin shows all fields by default... for now
 
-    index = urls.URL(r'^$', views.ListView, name='{app}_{model}_index')
-    create = urls.URL(r'^add/$', views.CreateView, name='{app}_{model}_create')
-    detail = urls.URL(r'^(?P<pk>.+)/preview/$', views.DetailView, name='{app}_{model}_detail')
-    update = urls.URL(r'^(?P<pk>.+)/edit/$', views.UpdateView, name='{app}_{model}_update')
-    delete = urls.URL(r'^(?P<pk>.+)/delete/$', views.DeleteView, name='{app}_{model}_delete')
+    index = urlconf.URL(r'^$', views.ListView, name='{app}_{model}_index')
+    create = urlconf.URL(r'^add/$', views.CreateView, name='{app}_{model}_create')
+    detail = urlconf.URL(r'^(?P<pk>.+)/preview/$', views.DetailView, name='{app}_{model}_detail')
+    update = urlconf.URL(r'^(?P<pk>.+)/edit/$', views.UpdateView, name='{app}_{model}_update')
+    delete = urlconf.URL(r'^(?P<pk>.+)/delete/$', views.DeleteView, name='{app}_{model}_delete')
 
     def __init__(self, model=None, **kwargs):
         # We need a model, either with the init or on the class
