@@ -9,7 +9,7 @@ setup(
     url='http://github.com/bpeschier/reek',
     author='Bas Peschier',
     author_email='bas.peschier@gmail.com',
-    packages=['urlconf', 'admin', 'restructuredfield'],
+    packages=['restructuredfield'],
     license='MIT',
     long_description=long_description,
     classifiers=[
