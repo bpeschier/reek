@@ -1,2 +1,6 @@
 Django
 docutils
+reek-restructuredfield
+reek-admin
+reek-pages
+django-declarative-urlconf
