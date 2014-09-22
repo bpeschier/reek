@@ -1,26 +1,6 @@
 URLconf
 =======
 
-Class-based URLs
-----------------
-
-.. code-block:: python
-
-    # urls.py
-    from urlconf import urls
-
-
-    class ViewSet(urls.URLs):
-
-        index = urls.URL(r'^$', ListView)
-        create = urls.URL(r'^add/$', CreateView)
-        detail = urls.URL(r'^(?P<pk>.+)/preview/$', DetailView)
-        update = urls.URL(r'^(?P<pk>.+)/edit/$', UpdateView)
-        delete = urls.URL(r'^(?P<pk>.+)/delete/$', DeleteView)
-
-    urlpatterns = ViewSet().as_urls()
-
-
 Dynamic urls
 ------------
 

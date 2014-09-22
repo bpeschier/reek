@@ -20,30 +20,17 @@ URLconf adds two new mechanisms for generating Django URLs. First it adds
 a dynamic mechanism for creating them from the admin. This is awfully
 similar to the Page-tree of many CMS'es.
 
-Second, it provides a base class for class-based urls. This feature is
-often known as a ViewSet, but in essense it is a way to define urls on a
-class and provide some hooks for customisation.
-
-.. toctree::
-    :maxdepth: 2
-
-    urlconf/index
-
 admin
 -----
 
-A reimagining of the Django admin using Django's class-based views and the
-class-based urls provided by `urlconf`. The goal is to have an admin
-which can be customised at (m)any point(s).
+A reimagining of the Django admin using Django's class-based views and
+class-based urls. The goal is to have an admin which can be customised
+at (m)any point(s).
 
 It removes the dependency of having a Django model as the base for an
 admin and an app for a section. It does, of course, provide AppSections
 and ModelAdmins for Django apps and models.
 
-.. toctree::
-    :maxdepth: 2
-
-    admin/index
 
 modelstate
 ----------
